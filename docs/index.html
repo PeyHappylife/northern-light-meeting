@@ -1,0 +1,591 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NorthernLight Meeting 申し込みフォーム</title>
+    <style>
+        :root { --text-main: #1e293b; --text-blue: #1d4ed8; --text-muted: #64748b; --accent-green: #0ed59e; --accent-red: #ef4444; --card-bg: #ffffff; --input-border: #e2e8f0; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; background: min(100vh, 100vw) radial-gradient(circle at 10% 10%, #e0f2fe 0%, #f3e8ff 40%, #ffffff 70%, #fae8ff 100%); background-attachment: fixed; color: var(--text-main); display: flex; flex-direction: column; align-items: center; min-height: 100vh; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
+        
+        .container { width: 100%; max-width: 600px; padding: 16px 12px; box-sizing: border-box; }
+        
+        /* 複合ネオンバウンス・ローディングゲート */
+        .loading-gate { width: 100%; max-width: 500px; margin: 60px auto; text-align: center; background: #ffffff; padding: 45px 20px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.7); transition: opacity 0.4s ease, transform 0.4s ease; }
+        .loading-gate.fade-out { opacity: 0; transform: scale(0.95); pointer-events: none; }
+        .spinner { width: 36px; height: 36px; border: 4px solid rgba(2, 132, 199, 0.08); border-left-color: #0284c7; border-radius: 50%; margin: 0 auto 24px auto; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .bouncing-neon-text { display: flex; justify-content: center; font-size: clamp(15px, 4.2vw, 19px); font-weight: bold; letter-spacing: 0.02em; padding: 10px 0; }
+        .bouncing-neon-text span { display: inline-block; color: var(--text-blue); animation: wave-jelly-neon 1.6s infinite ease-in-out; transform-origin: bottom center; }
+        
+        .bouncing-neon-text span:nth-child(1)  { animation-delay: 0.00s; }
+        .bouncing-neon-text span:nth-child(2)  { animation-delay: 0.08s; }
+        .bouncing-neon-text span:nth-child(3)  { animation-delay: 0.16s; }
+        .bouncing-neon-text span:nth-child(4)  { animation-delay: 0.24s; }
+        .bouncing-neon-text span:nth-child(5)  { animation-delay: 0.32s; }
+        .bouncing-neon-text span:nth-child(6)  { animation-delay: 0.40s; }
+        .bouncing-neon-text span:nth-child(7)  { animation-delay: 0.48s; }
+        .bouncing-neon-text span:nth-child(8)  { animation-delay: 0.56s; }
+        .bouncing-neon-text span:nth-child(9)  { animation-delay: 0.64s; }
+        .bouncing-neon-text span:nth-child(10) { animation-delay: 0.72s; }
+        .bouncing-neon-text span:nth-child(11) { animation-delay: 0.80s; }
+        .bouncing-neon-text span:nth-child(12) { animation-delay: 0.88s; }
+        .bouncing-neon-text span:nth-child(13) { animation-delay: 0.96s; }
+        .bouncing-neon-text span:nth-child(14) { animation-delay: 1.04s; }
+        .bouncing-neon-text span:nth-child(15) { animation-delay: 1.12s; }
+
+        @keyframes wave-jelly-neon {
+            0%, 100% { transform: translateY(0) scale(1, 1); color: var(--text-blue); text-shadow: none; }
+            30% { transform: translateY(-16px) scale(0.85, 1.15); color: #ec4899; text-shadow: 0 0 8px rgba(236, 72, 153, 0.9), 0 0 20px rgba(236, 72, 153, 0.5); }
+            50% { transform: translateY(0) scale(1.18, 0.82); color: #00aeef; text-shadow: 0 0 10px rgba(0, 174, 239, 0.9); }
+            70% { transform: translateY(-3px) scale(0.98, 1.02); color: #a855f7; text-shadow: 0 0 6px rgba(168, 85, 247, 0.5); }
+        }
+
+        .selector-section { width: 100%; padding: 18px 14px; margin: 0 auto 20px auto; text-align: center; background: rgba(255, 255, 255, 0.75); border-radius: 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.8); transition: opacity 0.4s ease; }
+        .select-alert { font-size: 16px; font-weight: bold; color: var(--text-blue); margin-top: 0; margin-bottom: 12px; }
+        .radio-container { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
+        .event-radio-label { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 12px; background: var(--card-bg); border: 2px solid var(--input-border); border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s ease; user-select: none; -webkit-user-select: none; }
+        .event-radio-label input[type="radio"] { margin-right: 12px; width: 20px; height: 20px; accent-color: #0284c7; flex-shrink: 0; }
+        .event-radio-label.selected { border-color: #38bdf8; background: #f0f9ff; color: #0369a1; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
+        
+        .main-layout { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 5px; width: 100%; transition: opacity 0.4s ease; }
+        .details-panel { text-align: center; padding: 10px 4px; width: 100%; }
+        .badge { display: inline-block; background-color: #e0e7ff; color: #4f46e5; font-size: 12px; font-weight: bold; padding: 6px 16px; border-radius: 20px; margin-bottom: 16px; letter-spacing: 0.05em; }
+        .main-title { font-size: 32px; font-weight: 900; margin: 0 0 16px 0; background: linear-gradient(135deg, #3b82f6 0%, #a855f7 50%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .event-date { font-size: 22px; font-weight: bold; color: #0369a1; margin-bottom: 8px; }
+        .event-time { font-size: 18px; font-weight: bold; color: #0369a1; margin-bottom: 16px; }
+        .event-venue { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
+        .event-guest { font-size: 18px; font-weight: bold; margin-bottom: 20px; }
+        .event-description { white-space: pre-wrap; text-align: center; background: rgba(255,255,255,0.65); padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; color: #475569; line-height: 1.6; border: 1px solid rgba(255,255,255,0.6); word-break: break-all; }
+        .divider { width: 60px; height: 2px; background-color: var(--accent-green); margin: 0 auto 20px auto; }
+        .note-green { color: var(--accent-green); font-weight: bold; font-size: 15px; margin-bottom: 18px; line-height: 1.6;}
+        .note-blue { color: #2563eb; font-weight: bold; font-size: 15px; line-height: 1.6; }
+        
+        /* ------------------------------------------------------------
+           ▼ 6大無重力（ノン・ドロップ）アニメーション・コアCSS
+        ------------------------------------------------------------ */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0); backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+            display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 16px; box-sizing: border-box;
+            pointer-events: none; transition: background 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease;
+        }
+        .modal-overlay.active { pointer-events: auto; }
+        
+        .modal-overlay.active.anim-neon,
+        .modal-overlay.active.anim-confetti,
+        .modal-overlay.active.anim-stardust { background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .modal-overlay.active.anim-slide { background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+        .modal-overlay.active.anim-theatrical { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .modal-overlay.active.anim-transform { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+        .form-panel { 
+            background: var(--card-bg); border-radius: 24px; padding: 26px 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.8);
+            width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; opacity: 0; pointer-events: none;
+        }
+        
+        /* 各演出出現アニメーション */
+        .modal-overlay.anim-neon.active .form-panel { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease; }
+        .modal-overlay.anim-neon .form-panel { transform: scale(0.85) translateY(30px); }
+        
+        .modal-overlay.anim-slide.active .form-panel { opacity: 1; pointer-events: auto; transform: translateX(0); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
+        .modal-overlay.anim-slide .form-panel { transform: translateX(100%); }
+        
+        .modal-overlay.anim-transform.active .form-panel { opacity: 1; pointer-events: auto; transform: scale(1); transition: transform 0.45s cubic-bezier(0.5, 1.2, 0.5, 1), opacity 0.4s ease; }
+        .modal-overlay.anim-transform .form-panel { transform: scale(0.6); }
+
+        .modal-overlay.anim-theatrical.active .form-panel { opacity: 1; pointer-events: auto; transform: translateY(0); transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease; }
+        .modal-overlay.anim-theatrical .form-panel { transform: translateY(-120px); }
+
+        .modal-overlay.anim-confetti.active .form-panel,
+        .modal-overlay.anim-stardust.active .form-panel { opacity: 1; pointer-events: auto; transform: translateY(0); transition: transform 0.35s ease, opacity 0.35s ease; }
+        .modal-overlay.anim-confetti .form-panel,
+        .modal-overlay.anim-stardust .form-panel { transform: translateY(20px); }
+
+        .placeholder-panel { background: var(--card-bg); border-radius: 20px; padding: 40px 14px; box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.06); text-align: center; grid-column: 1 / -1; font-weight: bold; color: var(--text-blue); font-size: 16px; border: 1px solid rgba(0,0,0,0.01); width: 100%; }
+        
+        /* フォーム要素の中央揃え設定 */
+        .form-title { font-size: 15px; color: var(--text-muted); margin-top: 0; margin-bottom: 18px; font-weight: bold; text-align: center; }
+        .form-group { margin-bottom: 18px; width: 100%; text-align: center; }
+        .form-group label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #334155; text-align: center; }
+        .required-badge { color: var(--accent-red); margin-left: 4px; }
+        .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="tel"] { width: 100%; padding: 12px; border: 1px solid var(--input-border); border-radius: 10px; font-size: 16px; background-color: #f8fafc; box-sizing: border-box; outline: none; transition: all 0.2s ease; -webkit-appearance: none; text-align: center; }
+        .form-group input:focus { border-color: #93c5fd; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.25); }
+        .inline-radio-group { display: flex; gap: 24px; margin-top: 6px; padding: 4px 0; justify-content: center; }
+        .inline-radio-label { display: flex; align-items: center; font-size: 15px; font-weight: bold; cursor: pointer; user-select: none; }
+        .inline-radio-label input { margin-right: 8px; width: 18px; height: 18px; accent-color: #0284c7; }
+        
+        .grid-radio-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; width: 100%; }
+        .grid-radio-group .inline-radio-label { background: #f8fafc; border: 1px solid var(--input-border); border-radius: 8px; padding: 12px 0; justify-content: center; font-size: 15px; transition: all 0.15s; }
+        .grid-radio-group .inline-radio-label input { margin-right: 4px; width: 15px; height: 15px; }
+        .grid-radio-group .inline-radio-label:has(input:checked) { background: #f0f9ff; border-color: #38bdf8; color: #0369a1; }
+        
+        .form-note { font-size: 12px; font-weight: bold; line-height: 1.6; margin-top: 6px; text-align: center; }
+        .form-note.red { color: var(--accent-red); }
+        .submit-btn { width: 100%; background: linear-gradient(to right, #00aeef, #00b5f1); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); margin-top: 10px; transition: opacity 0.2s; -webkit-tap-highlight-color: transparent; }
+        .btn-secondary { background: #e2e8f0; color: #475569; margin-top: 12px; box-shadow: none; }
+        
+        /* 確認画面項目の中央揃え設定 */
+        .confirm-item { padding: 14px 0; border-bottom: 1px solid #f1f5f9; width: 100%; text-align: center; }
+        .confirm-lbl { font-size: 13px; color: var(--text-muted); font-weight: bold; text-align: center; }
+        .confirm-val { font-size: 16px; font-weight: bold; margin-top: 4px; word-break: break-all; text-align: center; }
+        .hidden { display: none !important; }
+
+        /* ------------------------------------------------------------
+           ▼ 6大テーマ特化型：無重力（ノン・ドロップ）パーティクル物理キーフレーム
+        ------------------------------------------------------------ */
+        .confetti-container { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; overflow: hidden; z-index: 10; border-radius: 24px; }
+        .particle { position: absolute; pointer-events: none; opacity: 0; z-index: 40; }
+
+        /* 1. neon: 強烈に発光するビビッドなネオンレーザー（放射・消滅） */
+        .particle-neon {
+            width: 4px; height: 16px; border-radius: 2px;
+            animation: radial-laser var(--d, 1.8s) cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes radial-laser {
+            0% { transform: translate(0, 0) rotate(var(--rot)) scaleY(0.1); opacity: 1; filter: brightness(1.8); }
+            50% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scaleY(1.2); opacity: 1; }
+            100% { transform: translate(calc(var(--tx) * 1.1), calc(var(--ty) * 1.1)) rotate(var(--rot)) scaleY(0); opacity: 0; }
+        }
+
+        /* 2. slide: 左右に鋭く吹き抜けるストリーマー（水平方向への風流スライド） */
+        .particle-slide {
+            width: 32px; height: 3px; border-radius: 1px;
+            animation: blow-slide var(--d, 1.6s) cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+        @keyframes blow-slide {
+            0% { transform: translate(0, 0) skewX(20deg) scaleX(0.1); opacity: 1; }
+            50% { transform: translate(var(--tx), var(--ty)) skewX(10deg) scaleX(1.2); opacity: 1; }
+            100% { transform: translate(calc(var(--tx) * 1.25), var(--ty)) skewX(0deg) scaleX(0); opacity: 0; }
+        }
+
+        /* 3. transform: 回転・膨張してその場で消える幾何学エレメント */
+        .particle-transform {
+            width: 14px; height: 14px;
+            animation: morph-transform var(--d, 2s) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes morph-transform {
+            0% { transform: translate(0, 0) rotate(0deg) scale(0.1); opacity: 1; border-radius: var(--br, 0px); }
+            50% { transform: translate(var(--tx), var(--ty)) rotate(180deg) scale(1.15); opacity: 1; border-radius: calc(14px - var(--br)); }
+            100% { transform: translate(calc(var(--tx) * 1.05), calc(var(--ty) * 1.05)) rotate(360deg) scale(0); opacity: 0; }
+        }
+
+        /* 4. theatrical: 黄金 of 星屑粒子がオーロラのようにフワリと斜め上に上昇して消える演出 */
+        .particle-theatrical {
+            width: 8px; height: 8px; border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+            animation: theatrical-aurora var(--d, 2.5s) cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes theatrical-aurora {
+            0% { transform: translate(0, 0) scale(0.2); opacity: 1; filter: brightness(1.6); }
+            60% { transform: translate(var(--tx), var(--ty)) scale(1.2); opacity: 1; }
+            100% { transform: translate(calc(var(--tx) * 1.15), calc(var(--ty) * 1.15)) scale(0); opacity: 0; }
+        }
+
+        /* 5. confetti: お祝いクラッカーの破片が無重力で四方へポップに飛び散りそのままフェードアウト */
+        .particle-confetti {
+            width: 10px; height: 10px;
+            animation: zero-g-confetti var(--d, 2.2s) cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+        }
+        @keyframes zero-g-confetti {
+            0% { transform: translate(0, 0) rotateX(0deg) rotateY(0deg) scale(0.2); opacity: 1; }
+            45% { transform: translate(var(--tx), var(--ty)) rotateX(180deg) rotateY(180deg) scale(1.2); opacity: 1; }
+            100% { transform: translate(calc(var(--tx) * 1.1), calc(var(--ty) * 1.1)) rotateX(360deg) rotateY(360deg) scale(0); opacity: 0; }
+        }
+
+        /* 6. stardust: 星空のように瞬きながらスパイラルを描く微細な星屑（スピン外側拡散） */
+        .particle-stardust {
+            width: 5px; height: 5px; border-radius: 50%;
+            box-shadow: 0 0 8px currentColor;
+            animation: spiral-stardust var(--d, 2.8s) cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes spiral-stardust {
+            0% { transform: translate(0, 0) scale(0.2); opacity: 1; filter: brightness(2); }
+            50% { transform: translate(var(--tx), var(--ty)) scale(1.3); opacity: 1; }
+            100% { transform: translate(calc(var(--tx) * 1.1), calc(var(--ty) * 1.1)) scale(0); opacity: 0; }
+        }
+
+        @media (min-width: 769px) {
+            .container { max-width: 850px; padding: 30px 16px; }
+            .selector-section { max-width: 600px; padding: 20px 16px; margin-bottom: 24px; }
+            .event-radio-label { font-size: 15px; padding: 14px 16px; }
+            .main-layout { gap: 15px; }
+            .details-panel { padding: 20px 10px; max-width: 680px; margin: 0 auto; }
+            .main-title { font-size: clamp(32px, 4.5vw, 42px); margin-bottom: 24px; }
+            .event-time { margin-bottom: 20px; }
+            .event-venue { margin-bottom: 20px; }
+            .event-guest { margin-bottom: 24px; }
+            .event-description { font-size: 14px; margin-bottom: 24px; }
+            .note-green { font-size: 14px; margin-bottom: 20px; }
+            .note-blue { font-size: 14px; }
+        }
+    </style></head><body>
+    
+    <!-- 初期読込専用の完全隔離ゲート -->
+    <div id="loading-gate" class="loading-gate">
+        <div class="spinner"></div>
+        <div class="bouncing-neon-text" id="loading-gate-text">
+            <span>イ</span><span>ベ</span><span>ン</span><span>ト</span><span>情</span><span>報</span><span>を</span><span>読み込み中</span><span>.</span><span>.</span><span>.</span>
+        </div>
+        <p style="font-size:12px; font-weight:normal; color:var(--text-muted); margin-top:20px;">（初回は数秒かかる場合があります）</p>
+    </div>
+
+    <!-- 本編コンテナ -->
+    <div id="app-content" class="container hidden">
+        <div class="selector-section">
+            <p id="select-alert" class="select-alert hidden">日付を選んでください</p>
+            <div id="radio-group" class="radio-container"></div>
+        </div>
+        <div id="main-layout" class="main-layout">
+            <div id="placeholder-view" class="placeholder-panel">日付選ぶと詳細が出てきます。</div>
+            
+            <!-- 詳細パネル -->
+            <div id="details-view" class="details-panel hidden">
+                <div class="badge">SPECIAL EVENT</div>
+                <h1 class="main-title" id="disp-title">NorthernLight Meeting</h1>
+                <div id="disp-date" class="event-date"></div>
+                <div id="disp-time" class="event-time"></div>
+                <div id="disp-venue" class="event-venue"></div>
+                <div id="disp-guest" class="event-guest"></div>
+                <div id="disp-details" class="event-description hidden"></div>
+                <div class="divider"></div>
+                <div class="note-green">初めて参加される一般の方は無料で参加できます。</div>
+                <div class="note-blue">＊プライムカスタマーの方は有料となります。<br>前売り 1,500円 / 当日券 2,000円<br>現地でお支払いください。</div>
+                
+                <button onclick="openFormModal()" class="submit-btn" style="max-width: 360px; margin: 26px auto 0 auto; display: block;">お申し込み手続きへ進む →</button>
+            </div>
+            
+            <!-- フローティングモーダルコンテナ -->
+            <div id="form-modal" class="modal-overlay">
+                <div id="form-panel-view" class="form-panel" style="position: relative;">
+                    <div id="confetti-box" class="confetti-container"></div>
+
+                    <div id="modal-close-wrapper" style="text-align: right; margin-top: -10px; margin-bottom: 10px;">
+                        <button onclick="closeFormModal()" style="background: none; border: none; font-size: 30px; color: var(--text-muted); cursor: pointer; font-weight: 300; padding: 0 5px; line-height: 1;">&times;</button>
+                    </div>
+                    
+                    <div id="panel-input">
+                        <p class="form-title">こちらからお申し込みください。</p>
+                        <form id="reg-form" onsubmit="goToConfirm(event)">
+                            <div class="form-group"><label>フルネーム<span class="required-badge">＊</span></label><input type="text" id="ins-name" placeholder="例：山田 太郎" required></div>
+                            <div class="form-group"><label>フリガナ<span class="required-badge">＊</span></label><input type="text" id="ins-kana" placeholder="例：やまだ たろう" required></div>
+                            <div class="form-group"><label>メールアドレス<span class="required-badge">＊</span></label><input type="email" id="ins-email" placeholder="info@example.com" style="margin-bottom:8px;" required><input type="email" id="ins-email-chk" placeholder="確認用" required></div>
+                            <div class="form-group"><label>電話番号<span class="required-badge">＊</span></label><input type="tel" id="ins-phone" placeholder="090-1234-5678" required></div>
+                            <div class="form-group"><label>初回追加<span class="required-badge">＊</span></label><div class="inline-radio-group"><label class="inline-radio-label"><input type="radio" name="f-time" value="初回" checked>初回</label><label class="inline-radio-label"><input type="radio" name="f-time" value="追加">追加</label></div></div>
+                            <div class="form-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
+                            <div class="form-group"><label>枚数<span class="required-badge">＊</span></label><div class="form-note red">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div><div class="grid-radio-group" id="ticket-grid"></div></div>
+                            <div class="form-group"><label>アップダイヤ<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
+                            <button type="submit" class="submit-btn">確認画面へ →</button>
+                        </form>
+                    </div>
+                    
+                    <div id="panel-confirm" class="hidden">
+                        <h3 style="margin-top:0; color:var(--text-blue); font-size:18px; text-align: center;">お申し込み内容の確認</h3>
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px; text-align: center;">内容をご確認の上、「申し込みを確定する」を押してください。</p>
+                        <div class="confirm-item"><div class="confirm-lbl">対象イベント</div><div class="confirm-val" id="c-event"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">フルネーム</div><div class="confirm-val" id="c-name"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">フリガナ</div><div class="confirm-val" id="c-kana"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">メールアドレス</div><div class="confirm-val" id="c-email"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">電話番号</div><div class="confirm-val" id="c-phone"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">初回追加</div><div class="confirm-val" id="c-ftime"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">一般予定人数</div><div class="confirm-val" id="c-note"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">枚数</div><div class="confirm-val" id="c-tickets"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">アップダイヤ</div><div class="confirm-val" id="c-upline"></div></div>
+                        <button onclick="submitDataToGAS()" id="btn-final" class="submit-btn" style="background: linear-gradient(to right, #0ed59e, #06b6d4);">申し込みを確定する</button>
+                        <button onclick="backToInput()" class="submit-btn btn-secondary">修正する</button>
+                    </div>
+                    
+                    <div id="panel-success" class="hidden" style="text-align:center; padding:35px 0;">
+                        <div style="font-size:54px; color:var(--accent-green); margin-bottom:12px; transform: scale(0); animation: pop-check 0.4s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">✓</div>
+                        <h2 style="font-size:22px; margin-bottom:12px;">申し込みが完了しました</h2>
+                        <p style="color:var(--text-main); font-size:14px; font-weight:bold; line-height:1.7; margin-bottom:10px;">お申し込みありがとうございました。<br>当日のご来場をお待ちしております。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwrmOKZVW_XtE7oJB7w6iasacuHYmwxVakU78TrpXRJxRkVt0zjTxUZ4Ym7_LtHvsMn/exec';
+
+        let globalEvents = []; let currentPayload = {}; let activeEvent = null;
+        let confettiLoopInterval = null;
+
+        window.onload = function() {
+            try {
+                const grid = document.getElementById('ticket-grid'); let h = '';
+                for(let i=1; i<=10; i++) { h += `<label class="inline-radio-label"><input type="radio" name="t-count" value="${i}" ${i===1?'checked':''}>${i}</label>`; }
+                grid.innerHTML = h;
+
+                setTimeout(function() {
+                    if (globalEvents.length === 0 && document.getElementById('app-content').classList.contains('hidden')) {
+                        document.getElementById('loading-gate').innerHTML = `
+                            <div style='color:var(--accent-red); text-align:left; background:#fff1f2; padding:24px; border-radius:16px; border:2px solid #fecdd3; max-width:480px; margin:0 auto; font-family:sans-serif;'>
+                                <h3 style='margin-top:0; font-size:18px;'>⚠️ データ読み込みエラー</h3>
+                                <p style='font-size:14px; color:#9f1239; line-height:1.6; margin-bottom:14px;'>Google Apps Script の API URL が設定されていません。</p>
+                                <h4 style='margin:10px 0 6px 0; font-size:14px; color:#1e293b;'>【解決方法】</h4>
+                                <p style='font-size:13px; color:#475569; padding-left:20px; margin-top:0;'>index.html の GAS_API_URL に、デプロイ後のウェブアプリ URL を設定してください。</p>
+                            </div>`;
+                    }
+                }, 5000);
+
+                fetchEventsList();
+            } catch(e) {
+                alert("初期化エラー(JavaScript): " + e.message);
+            }
+        };
+
+        function fetchEventsList() {
+            fetch(GAS_API_URL + '?action=getEventsList')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("サーバーエラー: " + data.error);
+                } else {
+                    renderSelectors(data);
+                }
+            })
+            .catch(err => {
+                alert("データ取得失敗: " + err.message);
+                console.error(err);
+            });
+        }
+        
+        function openFormModal() {
+            const overlay = document.getElementById('form-modal');
+            overlay.className = "modal-overlay"; 
+            const anim = activeEvent && activeEvent.animation ? activeEvent.animation : "neon";
+            overlay.classList.add("anim-" + anim);
+            setTimeout(() => { overlay.classList.add('active'); }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+        function closeFormModal() {
+            if (!document.getElementById('panel-success').classList.contains('hidden')) return;
+            document.getElementById('form-modal').classList.remove('active');
+            document.body.style.overflow = '';
+            if (confettiLoopInterval) {
+                clearInterval(confettiLoopInterval);
+                confettiLoopInterval = null;
+            }
+        }
+
+        function renderSelectors(events) {
+            try {
+                globalEvents = events;
+                const gate = document.getElementById('loading-gate');
+                const content = document.getElementById('app-content');
+                const group = document.getElementById('radio-group');
+                const alertBox = document.getElementById('select-alert');
+                const placeholderView = document.getElementById('placeholder-view');
+                const detailsView = document.getElementById('details-view');
+
+                gate.classList.add('fade-out');
+                setTimeout(function() {
+                    gate.classList.add('hidden');
+                    content.classList.remove('hidden');
+                }, 400);
+
+                if(!events || events.length === 0) { group.innerHTML = '<p style="color:var(--accent-red); font-size:14px; font-weight:bold;">現在、募集中のイベントはありません。</p>'; return; }
+                if(events.length === 1) {
+                    alertBox.classList.add('hidden'); const ev = events[0]; const formattedLabel = formatEventLabel(ev); group.innerHTML = `<label class="event-radio-label selected"><input type="radio" name="ev-sel" value="${ev.id}" checked> ${formattedLabel}</label>`; selectEvent(ev);
+                    placeholderView.classList.add('hidden'); detailsView.classList.remove('hidden');
+                } else {
+                    alertBox.classList.remove('hidden'); placeholderView.classList.remove('hidden'); detailsView.classList.add('hidden');
+                    let html = ''; events.forEach(ev => { const formattedLabel = formatEventLabel(ev); html += `<label class="event-radio-label" id="lbl-${ev.id}"><input type="radio" name="ev-sel" value="${ev.id}" onchange="onRadioChange('${ev.id}')"> ${formattedLabel}</label>`; }); group.innerHTML = html;
+                }
+            } catch(e) {
+                alert("描画エラー(JavaScript): " + e.message);
+            }
+        }
+        function formatEventLabel(ev) {
+            if (ev.date && ev.eventName) {
+                const dateWithBackslash = ev.date.replace('/', '\\');
+                return dateWithBackslash + ' ' + ev.eventName;
+            }
+            return ev.radioLabel;
+        }
+        function onRadioChange(id) {
+            document.querySelectorAll('.event-radio-label').forEach(l => l.classList.remove('selected')); document.getElementById(`lbl-${id}`).classList.add('selected');
+            const ev = globalEvents.find(e => e.id === id);
+            if(ev) { selectEvent(ev); document.getElementById('placeholder-view').classList.add('hidden'); document.getElementById('details-view').classList.remove('hidden'); }
+        }
+        function selectEvent(ev) {
+            activeEvent = ev;
+            document.getElementById('disp-title').textContent = ev.eventName || "NorthernLight Meeting";
+            document.getElementById('disp-date').textContent = ev.date;
+            document.getElementById('disp-time').textContent = ev.time;
+            document.getElementById('disp-venue').textContent = ev.venue;
+            document.getElementById('disp-guest').textContent = ev.guest;
+            const detailsBox = document.getElementById('disp-details');
+            if(ev.details && ev.details.trim() !== "") { detailsBox.textContent = ev.details; detailsBox.classList.remove('hidden'); } else { detailsBox.classList.add('hidden'); }
+            document.getElementById('reg-form').dataset.sheetName = ev.sheetName;
+            document.getElementById('reg-form').dataset.eventLabel = ev.radioLabel;
+        }
+        function goToConfirm(e) {
+            e.preventDefault(); if(document.getElementById('ins-email').value !== document.getElementById('ins-email-chk').value) { alert("メールアドレスが一致しません。"); return; }
+            const form = document.getElementById('reg-form');
+            currentPayload = { sheetName: form.dataset.sheetName, name: document.getElementById('ins-name').value, kana: document.getElementById('ins-kana').value, email: document.getElementById('ins-email').value, phone: document.getElementById('ins-phone').value, firstTime: document.querySelector('input[name="f-time"]:checked').value, note: document.getElementById('ins-note').value || 'なし', tickets: document.querySelector('input[name="t-count"]:checked').value, upline: document.getElementById('ins-upline').value };
+            document.getElementById('c-event').textContent = form.dataset.eventLabel; document.getElementById('c-name').textContent = currentPayload.name; document.getElementById('c-kana').textContent = currentPayload.kana; document.getElementById('c-email').textContent = currentPayload.email; document.getElementById('c-phone').textContent = currentPayload.phone; document.getElementById('c-ftime').textContent = currentPayload.firstTime; document.getElementById('c-note').textContent = currentPayload.note; document.getElementById('c-tickets').textContent = currentPayload.tickets + " 枚"; document.getElementById('c-upline').textContent = currentPayload.upline;
+            
+            const inputPanel = document.getElementById('panel-input');
+            const confirmPanel = document.getElementById('panel-confirm');
+            
+            inputPanel.style.opacity = '0';
+            if (activeEvent && activeEvent.animation === "slide") {
+                inputPanel.style.transform = "translateX(-30px)";
+            }
+            setTimeout(function() {
+                inputPanel.classList.add('hidden');
+                confirmPanel.classList.remove('hidden');
+                confirmPanel.style.opacity = '0';
+                if (activeEvent && activeEvent.animation === "slide") {
+                    confirmPanel.style.transform = "translateX(30px)";
+                }
+                setTimeout(function() { 
+                    confirmPanel.style.opacity = '1'; 
+                    confirmPanel.style.transform = "translateX(0)";
+                }, 20);
+                document.getElementById('form-panel-view').scrollTop = 0;
+            }, 150);
+        }
+        function backToInput() {
+            const inputPanel = document.getElementById('panel-input');
+            const confirmPanel = document.getElementById('panel-confirm');
+            confirmPanel.style.opacity = '0';
+            setTimeout(function() {
+                confirmPanel.classList.add('hidden');
+                inputPanel.classList.remove('hidden');
+                inputPanel.style.opacity = '0';
+                setTimeout(function() { inputPanel.style.opacity = '1'; }, 20);
+                document.getElementById('form-panel-view').scrollTop = 0;
+            }, 150);
+        }
+        function submitDataToGAS() {
+            const btn = document.getElementById('btn-final'); btn.disabled = true; btn.textContent = "送信中...";
+            if (activeEvent && activeEvent.animation === "neon") {
+                btn.style.boxShadow = "0 0 30px #0ed59e, inset 0 0 15px #ffffff";
+                btn.style.filter = "brightness(1.5)";
+            }
+
+            const params = new URLSearchParams({
+                action: 'registerParticipant',
+                ...currentPayload
+            });
+
+            fetch(GAS_API_URL + '?' + params.toString())
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("送信エラー: " + data.error);
+                    btn.disabled = false;
+                    btn.textContent = "申し込みを確定する";
+                } else {
+                    document.getElementById('panel-confirm').classList.add('hidden');
+                    document.getElementById('panel-success').classList.remove('hidden');
+                    const closeWrapper = document.getElementById('modal-close-wrapper');
+                    if (closeWrapper) closeWrapper.classList.add('hidden');
+                    document.getElementById('form-panel-view').scrollTop = 0;
+
+                    if (activeEvent && (activeEvent.animation === "confetti" || activeEvent.animation === "neon" || activeEvent.animation === "stardust" || activeEvent.animation === "slide" || activeEvent.animation === "theatrical" || activeEvent.animation === "transform")) {
+                        startConfettiLoop();
+                    }
+                }
+            })
+            .catch(err => {
+                alert("送信エラー: " + err.message);
+                btn.disabled = false;
+                btn.textContent = "申し込みを確定する";
+                console.error(err);
+            });
+        }
+
+        /* 申し込み完了画面：無重力スターダストのループ制御（1秒間隔余韻） */
+        function startConfettiLoop() {
+            if (confettiLoopInterval) clearInterval(confettiLoopInterval);
+            fireConfettiEffect();
+            confettiLoopInterval = setInterval(function() {
+                fireConfettiEffect();
+            }, 3900);
+        }
+
+        /* ノン・ドロップ（無重力）動的スターダスト・ポップエフェクト */
+        function fireConfettiEffect() {
+            const box = document.getElementById('confetti-box');
+            box.innerHTML = '';
+            
+            const anim = activeEvent && activeEvent.animation ? activeEvent.animation : "neon";
+            let particleCount = 45;
+            let themeClass = 'particle-confetti';
+            let colors = [];
+            
+            if (anim === 'neon') {
+                themeClass = 'particle-neon';
+                colors = ['#ec4899', '#00aeef', '#f43f5e', '#38bdf8', '#ffffff'];
+                particleCount = 50;
+            } 
+            else if (anim === 'slide') {
+                themeClass = 'particle-slide';
+                colors = ['#10b981', '#34d399', '#059669', '#a7f3d0', '#ffffff'];
+                particleCount = 35;
+            } 
+            else if (anim === 'transform') {
+                themeClass = 'particle-transform';
+                colors = ['#f59e0b', '#fbbf24', '#d97706', '#fff7ed', '#f97316'];
+                particleCount = 40;
+            } 
+            else if (anim === 'theatrical') {
+                themeClass = 'particle-theatrical';
+                colors = ['#fbbf24', '#f59e0b', '#fef08a', '#fffbeb', '#d97706'];
+                particleCount = 35;
+            } 
+            else if (anim === 'confetti') {
+                themeClass = 'particle-confetti';
+                colors = ['#00aeef', '#ec4899', '#a855f7', '#0ed59e', '#f59e0b', '#fb7185'];
+                particleCount = 50;
+            } 
+            else if (anim === 'stardust') {
+                themeClass = 'particle-stardust';
+                colors = ['#6366f1', '#a855f7', '#ec4899', '#4338ca', '#ffffff', '#c084fc'];
+                particleCount = 60;
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                const p = document.createElement('div');
+                p.className = `particle ${themeClass}`;
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.color = colors[Math.floor(Math.random() * colors.length)]; 
+                
+                p.style.left = '50%'; 
+                p.style.top = '40%';
+                
+                const angle = Math.random() * Math.PI * 2;
+                let radius = 95 + Math.random() * 130;
+                
+                let tx = Math.cos(angle) * radius;
+                let ty = Math.sin(angle) * radius;
+                
+                if (anim === 'slide') {
+                    tx = (Math.random() > 0.5 ? 1 : -1) * (110 + Math.random() * 130);
+                    ty = (Math.random() * 80 - 40); 
+                } 
+                else if (anim === 'theatrical') {
+                    tx = (Math.random() * 160 - 80);
+                    ty = -(60 + Math.random() * 100); 
+                }
+                
+                p.style.setProperty('--tx', tx + 'px');
+                p.style.setProperty('--ty', ty + 'px');
+                p.style.setProperty('--rot', (Math.random() * 360) + 'deg');
+                
+                if (anim === 'transform') {
+                    p.style.setProperty('--br', (Math.random() > 0.5 ? '50%' : '0px'));
+                }
+                
+                p.style.animationDelay = (Math.random() * 0.18) + 's';
+                p.style.setProperty('--d', (1.4 + Math.random() * 1.5) + 's');
+                
+                box.appendChild(p);
+            }
+        }
+    </script>
+</body></html>
