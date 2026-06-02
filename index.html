@@ -413,9 +413,11 @@
             activeEvent = ev;
             document.getElementById('disp-title').textContent = ev.eventName || "NorthernLight Meeting";
             document.getElementById('disp-date').textContent = ev.date;
-            document.getElementById('disp-time').textContent = ev.time;
-            document.getElementById('disp-venue').textContent = ev.venue;
-            document.getElementById('disp-guest').textContent = ev.guest;
+            let match = ev.time.match(/OPEN\s+(\d+:\d+)\s+(\d+:\d+)\s+(.*)/);
+            let timeText = match ? 'OPEN ' + match[1] + '\nSTART ' + match[2] + '\n' + match[3] : ev.time;
+            document.getElementById('disp-time').textContent = timeText;
+            document.getElementById('disp-venue').classList.add('hidden');
+            document.getElementById('disp-guest').classList.add('hidden');
             const detailsBox = document.getElementById('disp-details');
             if(ev.details && ev.details.trim() !== "") { detailsBox.textContent = ev.details; detailsBox.classList.remove('hidden'); } else { detailsBox.classList.add('hidden'); }
             document.getElementById('reg-form').dataset.sheetName = ev.sheetName;
