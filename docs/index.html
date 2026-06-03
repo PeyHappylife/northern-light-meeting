@@ -410,6 +410,7 @@
                 }, 5000);
 
                 fetchEventsList();
+                flushConfirmations();   // フォーム読み込み時：未送信の確認メールを送信（非同期・UIは待たせない）
             } catch(e) {
                 alert("初期化エラー(JavaScript): " + e.message);
             }
@@ -690,6 +691,11 @@
                 if (typeof updateSteps === 'function') updateSteps();
             }, 150);
         }
+        // 未送信の確認メールをサーバーに送らせる（非同期・結果は待たない＝UIをブロックしない）
+        function flushConfirmations() {
+            try { fetch(GAS_API_URL + '?action=flushConfirmations').catch(function(){}); } catch (e) {}
+        }
+
         // 完了画面のタイプライター表示
         let _twTitle = '', _twMsg = '', _twCaptured = false;
         function typeWriter(el, text, speed, cb) {
@@ -743,6 +749,7 @@
                         document.getElementById('panel-confirm').classList.add('hidden');
                         document.getElementById('panel-success').classList.remove('hidden');
                         playSuccessTypewriter();   // 完了テキストをタイプライター表示
+                        flushConfirmations();      // 申込完了直後：この申込みの確認メールを送信（非同期）
                         const closeWrapper = document.getElementById('modal-close-wrapper');
                         if (closeWrapper) closeWrapper.classList.add('hidden');
                         document.getElementById('form-panel-view').scrollTop = 0;
