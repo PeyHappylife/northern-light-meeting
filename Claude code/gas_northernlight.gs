@@ -35,9 +35,9 @@ function doGet(e) {
   try {
     switch (action) {
       case 'getEventsList':           return json(getEventsList());
-      case 'getUniqueEventNames':     return json(getUniqueValues(EVENT_LIST_SHEET, 0));
-      case 'getUniqueGuests':         return json(getUniqueValues(EVENT_LIST_SHEET, 5));
-      case 'getUniqueVenues':         return json(getUniqueValues(EVENT_LIST_SHEET, 4));
+      case 'getUniqueEventNames':     return json(getUniqueValues(EVENT_LIST_SHEET, 7)); // H列: イベント名
+      case 'getUniqueGuests':         return json(getUniqueValues(EVENT_LIST_SHEET, 3)); // D列: ゲスト名
+      case 'getUniqueVenues':         return json(getUniqueValues(EVENT_LIST_SHEET, 2)); // C列: 開催場所
       case 'getUniqueDetails':        return json(getUniqueDetails());
       case 'getAllEventsListForAdmin': return json(getAllEventsListForAdmin());
       case 'createNewEvent':          return json(createNewEvent(p));
@@ -83,14 +83,14 @@ function getEventsList() {
       id:         'ev_' + i,
       radioLabel: dateForBackslash + ' ' + String(row[7]),
       date:       dateFormatted,
-      time:       'OPEN ' + String(row[1] || '19:00') + ' / START ' + String(row[2] || '19:30'),
-      venue:      String(row[3] || ''),
-      guest:      String(row[4] || ''),
-      sheetName:  dateKey + ' ' + String(row[4] || ''),
-      details:    String(row[5] || ''),
-      eventName:  String(row[7]),
-      animation:  String(row[6] || 'neon'),
-      showNote:   String(row[8] || '') !== '無'   // I列が「無」のときのみ非表示。未設定・既存は表示。
+      time:       String(row[1] || 'OPEN 19:00 / START 19:30'),               // B列: 時間(OPEN/START)
+      venue:      String(row[2] || ''),                                       // C列: 開催場所
+      guest:      String(row[3] || ''),                                       // D列: ゲスト名
+      sheetName:  String(row[4] || (dateKey + ' ' + String(row[3] || ''))),   // E列: シート識別名
+      details:    String(row[6] || ''),                                       // G列: 詳細
+      eventName:  String(row[7]),                                             // H列: イベント名
+      animation:  String(row[8] || 'neon'),                                   // I列: アニメーション
+      showNote:   String(row[9] || '') !== '無'                              // J列が「無」のときのみ非表示。未設定・既存は表示。
     });
   }
   events.sort(function(a, b) { return a.date.localeCompare(b.date); });
@@ -133,7 +133,7 @@ function getAllEventsListForAdmin() {
     const dateKey       = Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyyMMdd');
     const dateForBackslash = Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy\\MM/dd');
     events.push({
-      sheetName:  dateKey + ' ' + String(row[4] || ''),
+      sheetName:  String(row[4] || (dateKey + ' ' + String(row[3] || ''))),
       radioLabel: dateForBackslash + ' ' + String(row[7])
     });
   }
@@ -152,10 +152,13 @@ function createNewEvent(p) {
 
   const eventDate = new Date(p.date);
   const dateKey   = Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyyMMdd');
+  const dateForm  = Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy/MM/dd');
   const sheetName = dateKey + ' ' + p.guest;
+  const timeStr   = 'OPEN ' + p.openTime + ' / START ' + p.startTime;
+  const showNote  = (p.showNote === '無') ? '無' : '有';
 
-  const showNote = (p.showNote === '無') ? '無' : '有';
-  listSheet.appendRow([eventDate, p.openTime, p.startTime, p.venue, p.guest, p.details || '', p.animation || 'neon', p.eventName, showNote]);
+  // A=日付 B=時間 C=開催場所 D=ゲスト名 E=シート識別名 F=(空) G=詳細 H=イベント名 I=アニメーション J=有無
+  listSheet.appendRow([dateForm, timeStr, p.venue, p.guest, sheetName, '', p.details || '', p.eventName, p.animation || 'neon', showNote]);
 
   if (!ss.getSheetByName(sheetName)) {
     const evSheet = ss.insertSheet(sheetName);
@@ -181,12 +184,8 @@ function deleteEvent(p) {
   const listSheet = ss.getSheetByName(EVENT_LIST_SHEET);
   if (listSheet) {
     const data = listSheet.getDataRange().getValues();
-    const dk = p.sheetName.substring(0, 8);
     for (let i = data.length - 1; i >= 1; i--) {
-      const ed = data[i][0] instanceof Date ? data[i][0] : new Date(data[i][0]);
-      if (isNaN(ed.getTime())) continue;
-      if (Utilities.formatDate(ed, 'Asia/Tokyo', 'yyyyMMdd') === dk &&
-          (Utilities.formatDate(ed, 'Asia/Tokyo', 'yyyyMMdd') + ' ' + String(data[i][4])) === p.sheetName) {
+      if (String(data[i][4] || '') === p.sheetName) {   // E列: シート識別名で照合
         listSheet.deleteRow(i + 1); break;
       }
     }
@@ -373,7 +372,7 @@ function sendConfirmationEmail(p, eventInfo) {
     name: p.name || '', kana: p.kana || '', email: email, phone: p.phone || '',
     firstTime: p.firstTime || '', note: showNote ? (p.note || '') : '', tickets: p.tickets || '', upline: p.upline || '',
     date:      eventInfo ? eventInfo.date  : '',
-    time:      eventInfo ? 'OPEN ' + eventInfo.openTime + ' / START ' + eventInfo.startTime : '',
+    time:      eventInfo ? eventInfo.time  : '',
     venue:     eventInfo ? eventInfo.venue : '',
     guest:     eventInfo ? eventInfo.guest : '',
     eventName: eventInfo ? eventInfo.eventName : ''
@@ -389,21 +388,19 @@ function getEventInfoBySheetName(sheetName) {
   const ss = getSpreadsheet();
   const ls = ss.getSheetByName(EVENT_LIST_SHEET);
   if (!ls) return null;
-  const dk   = sheetName.substring(0, 8);
   const rows = ls.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {
     const ed = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]);
     if (isNaN(ed.getTime())) continue;
-    if (Utilities.formatDate(ed, 'Asia/Tokyo', 'yyyyMMdd') !== dk) continue;
+    if (String(rows[i][4] || '') !== sheetName) continue;   // E列: シート識別名で照合
     return {
-      eventName: String(rows[i][7] || ''),
+      eventName: String(rows[i][7] || ''),                  // H列
       date:      Utilities.formatDate(ed, 'Asia/Tokyo', 'yyyy/MM/dd'),
-      openTime:  String(rows[i][1] || '19:00'),
-      startTime: String(rows[i][2] || '19:30'),
-      venue:     String(rows[i][3] || ''),
-      guest:     String(rows[i][4] || ''),
-      details:   String(rows[i][5] || ''),
-      showNote:  String(rows[i][8] || '') !== '無'
+      time:      String(rows[i][1] || 'OPEN 19:00 / START 19:30'), // B列: 時間
+      venue:     String(rows[i][2] || ''),                  // C列: 開催場所
+      guest:     String(rows[i][3] || ''),                  // D列: ゲスト名
+      details:   String(rows[i][6] || ''),                  // G列: 詳細
+      showNote:  String(rows[i][9] || '') !== '無'         // J列: 有無
     };
   }
   return null;
@@ -442,7 +439,7 @@ function buildMailData(row, eventDate, info) {
     tickets:   String(row[7] || ''), upline:String(row[8] || ''),
     date:      Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy年MM月dd日'),
     dateSlash: Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy/MM/dd'),
-    time:      info ? 'OPEN ' + info.openTime + ' / START ' + info.startTime : '',
+    time:      info ? info.time      : '',
     venue:     info ? info.venue     : '',
     guest:     info ? info.guest     : '',
     eventName: info ? info.eventName : ''

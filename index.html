@@ -275,7 +275,7 @@
                             <div class="form-group lg"><label>メールアドレス<span class="required-badge">＊</span></label><input type="email" id="ins-email" placeholder="info@example.com" style="margin-bottom:8px;" required><input type="email" id="ins-email-chk" placeholder="確認用" required></div>
                             <div class="form-group lg"><label>電話番号<span class="required-badge">＊</span></label><input type="tel" id="ins-phone" placeholder="090-1234-5678" required></div>
                             <div class="form-group" id="note-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
-                            <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div class="form-note red">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div><div class="grid-radio-group" id="ticket-grid"></div></div>
+                            <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div></div>
                             <div class="form-group"><label>アップダイヤ<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
                             <button type="submit" class="submit-btn">確認画面へ →</button>
                         </form>
@@ -413,22 +413,23 @@
             activeEvent = ev;
             document.getElementById('disp-title').textContent = ev.eventName || "NorthernLight Meeting";
             document.getElementById('disp-date').textContent = ev.date;
-            // ev.time の形式: 'OPEN ' + B列(時間) + ' / START ' + C列(開催場所)
-            // 例: "OPEN OPEN 19:00 / START 19:30 / START 札幌エルプラザ"
-            // → B列(時間) / C列(開催場所) / D列(ゲスト名) を改行で表示
+            // 時間(B列) / 開催場所(C列) / ゲスト名(D列) を改行表示。
+            // 新GAS(正常データ)・旧GAS(二重データ)の両方に対応。
             let raw = ev.time || '';
-            let sep = raw.lastIndexOf(' / START ');
-            let lines = [];
-            if (sep !== -1) {
-                let bCol = raw.substring(0, sep).replace(/^\s*OPEN\s+/, ''); // B列: OPEN 19:00 / START 19:30
-                let cCol = raw.substring(sep + ' / START '.length).trim();   // C列: 札幌エルプラザ
-                if (bCol) lines.push(bCol);
-                if (cCol) lines.push(cCol);
-            } else if (raw) {
-                lines.push(raw);
+            let parts = raw.split(' / START ');
+            let timeLine, venueLine, guestLine;
+            if (parts.length >= 3) {
+                // 旧GAS(二重): "OPEN OPEN 19:00" / "19:30" / "札幌エルプラザ"、ゲスト名は ev.venue
+                timeLine  = parts[0].replace(/^\s*OPEN\s+/, '') + ' / START ' + parts[1];
+                venueLine = parts.slice(2).join(' / START ').trim();
+                guestLine = (ev.venue || '').trim();
+            } else {
+                // 新GAS(正常): time=「OPEN x / START y」, venue=開催場所, guest=ゲスト名
+                timeLine  = raw;
+                venueLine = (ev.venue || '').trim();
+                guestLine = (ev.guest || '').trim();
             }
-            let dCol = (ev.venue || '').trim();                              // D列: ゲスト名
-            if (dCol) lines.push(dCol);
+            let lines = [timeLine, venueLine, guestLine].filter(function(s){ return s && s.trim() !== ''; });
             document.getElementById('disp-time').textContent = lines.join('\n');
             document.getElementById('disp-venue').classList.add('hidden');
             document.getElementById('disp-guest').classList.add('hidden');
@@ -440,6 +441,7 @@
             const showNote = !(ev.showNote === false || ev.showNote === '無' || ev.showNote === '0' || ev.showNote === 0);
             ev.showNote = showNote;
             document.getElementById('note-group').classList.toggle('hidden', !showNote);
+            document.getElementById('ticket-notes').classList.toggle('hidden', !showNote);
         }
         function goToConfirm(e) {
             e.preventDefault(); if(document.getElementById('ins-email').value !== document.getElementById('ins-email-chk').value) { alert("メールアドレスが一致しません。"); return; }
