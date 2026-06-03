@@ -413,11 +413,11 @@
         function formatEventLabel(ev) {
             let dateStr, name;
             if (ev.date && ev.eventName) {
-                dateStr = ev.date.replace('/', '\\');
+                dateStr = ev.date;                       // スラッシュのまま（例 2026/06/10）
                 name = ev.eventName;
             } else {
                 const idx = (ev.radioLabel || '').indexOf(' ');
-                dateStr = idx > 0 ? ev.radioLabel.slice(0, idx) : (ev.radioLabel || '');
+                dateStr = (idx > 0 ? ev.radioLabel.slice(0, idx) : (ev.radioLabel || '')).replace(/\\/g, '/');
                 name = idx > 0 ? ev.radioLabel.slice(idx + 1) : '';
             }
             // 日付とタイトルの間で改行
