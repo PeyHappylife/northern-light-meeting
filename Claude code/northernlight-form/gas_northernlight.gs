@@ -51,6 +51,7 @@ function doGet(e) {
       case 'deleteEvent':             return json(deleteEvent(p));
       case 'registerParticipant':     return json(registerParticipant(p));
       case 'sendAllToParticipant':    return json(sendAllToParticipant(p));
+      case 'installTemplates':        return json(installTemplates());
       case 'getMailTimes':            return json(getMailTimes());
       case 'setMailTime':             return json(setMailTime(p));
       default:                        return json({ error: 'Unknown action: ' + action });
@@ -241,6 +242,23 @@ function registerParticipant(p) {
     Logger.log('確認メール送信エラー: ' + mailErr.toString());
   }
 
+  // 送信タイミングを既に過ぎたリマインドは「対象外」を記入し、自動送信させない
+  try {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const evDate = new Date(
+      parseInt(p.sheetName.substring(0, 4)),
+      parseInt(p.sheetName.substring(4, 6)) - 1,
+      parseInt(p.sheetName.substring(6, 8))
+    );
+    evDate.setHours(0, 0, 0, 0);
+    const diff = Math.round((evDate.getTime() - today.getTime()) / 86400000); // 開催まで何日
+    const reminderDays = { d7before: 7, d3before: 3, d1before: 1, sameday: 0, d7after: -7 };
+    Object.keys(reminderDays).forEach(function(k) {
+      // そのリマインドの送信日が今日より前（=過ぎている）なら対象外
+      if (reminderDays[k] > diff) sheet.getRange(lastRow, FLAG_COL[k]).setValue('対象外');
+    });
+  } catch (e) { Logger.log('対象外マーク失敗: ' + e); }
+
   return { message: 'お申し込みを受け付けました。確認メールをお送りしました。' };
 }
 
@@ -379,6 +397,76 @@ function sendScheduledEmails() {
 }
 
 // ─────────────────────────────────────────────
+//  メール本文テンプレを一括投入（メール内容シートのC列=本文を上書き）
+//  エディタで installTemplates を実行、または ?action=installTemplates
+// ─────────────────────────────────────────────
+function installTemplates() {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(MAIL_TEMPLATE_SHEET);
+  if (!sheet) throw new Error('メール内容シートがありません');
+
+  const block =
+    '──────────────\n' +
+    'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n会場：[会場]\nゲスト：[ゲスト]\n\n' +
+    'フルネーム：[名前]\nフリガナ：[フリガナ]\nメールアドレス：[メール]\n電話番号：[電話]\n' +
+    'アップライン：[アップライン]\n一般予定人数：[一般予定人数]\n枚数：[枚数]\n金額：[金額]\n' +
+    '──────────────';
+  const eventBlock =
+    '──────────────\n' +
+    'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n会場：[会場]\nゲスト：[ゲスト]\n' +
+    '──────────────';
+  const link = '追加はこちら\n→ https://peyhappylife.github.io/northern-light-meeting/';
+
+  const T = {
+    'オーダー受付メール':
+      '[名前] 様\n\nこの度は[イベント名]にお申し込みいただき、誠にありがとうございます。\n下記の内容で受け付けいたしました。\n\n' +
+      block + '\n\n' + link + '\n\n当日のご来場を心よりお待ちしております。',
+    '7日前リマインダーメール':
+      '[名前] 様\n\n[イベント名]の開催まで、あと7日となりました。\nお申し込み内容を再度ご確認ください。\n\n' +
+      block + '\n\n' + link + '\n\n当日お会いできることを楽しみにしております。',
+    '3日前リマインダーメール':
+      '[名前] 様\n\n[イベント名]の開催まで、あと3日となりました。\n下記の内容をご確認の上、お気をつけてお越しください。\n\n' +
+      block + '\n\n' + link + '\n\nご来場を心よりお待ちしております。',
+    '前日リマインダーメール':
+      '[名前] 様\n\nいよいよ明日、[イベント名]を開催いたします。\n下記の内容を今一度ご確認ください。\n\n' +
+      block + '\n\n' + link + '\n\nお気をつけてお越しください。お会いできるのを楽しみにしております。',
+    '当日感謝メール':
+      '[名前] 様\n本日は[イベント名]にご参加いただき、誠にありがとうございました。\n\n' +
+      '次回はこちら\n→ https://peyhappylife.github.io/northern-light-meeting/\n\n' +
+      'またのご参加を、スタッフ一同、心よりお待ちしております。',
+    '次回リマインドメール':
+      '[名前] 様\n\n先日は[イベント名]にご参加いただき、誠にありがとうございました。\n次回開催のご案内です。ぜひまたお越しください。\n\n' +
+      eventBlock + '\n\nオーダーはこちら\n→ https://peyhappylife.github.io/northern-light-meeting/\n\n' +
+      'スタッフ一同、心よりお待ちしております。'
+  };
+
+  // 件名（B列）。[MMDD]＝開催日MM/DD、[イベント名]＝H列
+  const S = {
+    'オーダー受付メール':       '【感謝】[MMDD] [イベント名]',
+    '7日前リマインダーメール':   '【あと7日】[MMDD] [イベント名]',
+    '3日前リマインダーメール':   '【あと3日】[MMDD] [イベント名]',
+    '前日リマインダーメール':     '【とうとう明日】[MMDD] [イベント名]',
+    '当日感謝メール':            '【ご参加ありがとうございました】[MMDD] [イベント名]',
+    '次回リマインドメール':       '【次回】[MMDD] [イベント名]'
+  };
+
+  const rows = sheet.getDataRange().getValues();
+  const done = [];
+  Object.keys(T).forEach(function(name) {
+    for (let i = 1; i < rows.length; i++) {
+      const nm = String(rows[i][0]).trim();
+      if (nm === name || nm === name + 'の件名') {
+        if (S[name]) sheet.getRange(i + 1, 2).setValue(S[name]);  // B列=件名を上書き
+        sheet.getRange(i + 1, 3).setValue(T[name]);  // C列=本文を上書き
+        done.push(nm);
+        break;
+      }
+    }
+  });
+  return { message: done.length + '件のテンプレ本文を更新しました。', updated: done };
+}
+
+// ─────────────────────────────────────────────
 //  メール送信権限(script.send_mail)を承認するための関数。
 //  エディタでこの関数を1回実行 →「許可」を押すと送信権限が付与される。
 //  （実行すると自分宛に確認メールが1通届きます）
@@ -463,6 +551,7 @@ function sendConfirmationEmail(p, eventInfo) {
     firstTime: p.firstTime || '', note: showNote ? (p.note || '') : '', tickets: p.tickets || '', upline: p.upline || '',
     fee:       formatYen(price * tnum),   // 金額 = 前売り単価 × 枚数
     date:      eventInfo ? eventInfo.date  : '',
+    dateMd:    eventInfo ? eventInfo.dateMd : '',
     time:      eventInfo ? eventInfo.time  : '',
     venue:     eventInfo ? eventInfo.venue : '',
     guest:     eventInfo ? eventInfo.guest : '',
@@ -489,6 +578,7 @@ function getEventInfoBySheetName(sheetName) {
     return {
       eventName: String(rows[i][7] || ''),                  // H列
       date:      Utilities.formatDate(ed, 'Asia/Tokyo', 'yyyy/MM/dd'),
+      dateMd:    Utilities.formatDate(ed, 'Asia/Tokyo', 'MM/dd'),  // 件名用 MM/DD
       time:      String(rows[i][1] || 'OPEN 19:00 / START 19:30'), // B列: 時間
       venue:     String(rows[i][2] || ''),                  // C列: 開催場所
       guest:     String(rows[i][3] || ''),                  // D列: ゲスト名
@@ -537,7 +627,7 @@ function applyTemplate(template, data) {
     '名前': 'name', 'フルネーム': 'name', 'フリガナ': 'kana',
     'メール': 'email', 'メールアドレス': 'email', '電話': 'phone', '電話番号': 'phone',
     '一般予定人数': 'note', '予定人数': 'note', '枚数': 'tickets', '金額': 'fee', 'アップライン': 'upline', 'アップダイヤ': 'upline',
-    '日付': 'date', '開催日': 'date', '日時': 'time', '時間': 'time',
+    '日付': 'date', '開催日': 'date', 'MMDD': 'dateMd', '日時': 'time', '時間': 'time',
     '会場': 'venue', '開催場所': 'venue', 'ゲスト': 'guest', 'ゲスト名': 'guest', 'イベント名': 'eventName'
   };
   Object.keys(jpMap).forEach(function(jp) {
@@ -561,6 +651,7 @@ function buildMailData(row, eventDate, info) {
     fee:       formatYen(price * tnum),   // 金額 = 前売り単価 × 枚数
     date:      Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy年MM月dd日'),
     dateSlash: Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy/MM/dd'),
+    dateMd:    Utilities.formatDate(eventDate, 'Asia/Tokyo', 'MM/dd'),
     time:      info ? info.time      : '',
     venue:     info ? info.venue     : '',
     guest:     info ? info.guest     : '',
