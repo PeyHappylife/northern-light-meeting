@@ -53,7 +53,7 @@
         .badge { display: inline-block; background-color: #e0e7ff; color: #4f46e5; font-size: 12px; font-weight: bold; padding: 6px 16px; border-radius: 20px; margin-bottom: 16px; letter-spacing: 0.05em; }
         .main-title { font-size: 32px; font-weight: 900; margin: 0 0 16px 0; background: linear-gradient(135deg, #3b82f6 0%, #a855f7 50%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .event-date { font-size: 22px; font-weight: bold; color: #0369a1; margin-bottom: 8px; }
-        .event-time { font-size: 18px; font-weight: bold; color: #0369a1; margin-bottom: 16px; }
+        .event-time { font-size: 18px; font-weight: bold; color: #0369a1; margin-bottom: 16px; white-space: pre-line; line-height: 1.6; }
         .event-venue { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
         .event-guest { font-size: 18px; font-weight: bold; margin-bottom: 20px; }
         .event-description { white-space: pre-wrap; text-align: center; background: rgba(255,255,255,0.65); padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; color: #475569; line-height: 1.6; border: 1px solid rgba(255,255,255,0.6); word-break: break-all; }
@@ -413,8 +413,17 @@
             activeEvent = ev;
             document.getElementById('disp-title').textContent = ev.eventName || "NorthernLight Meeting";
             document.getElementById('disp-date').textContent = ev.date;
-            let match = ev.time.match(/OPEN\s+(\d+:\d+)\s+(\d+:\d+)\s+(.*)/);
-            let timeText = match ? 'OPEN ' + match[1] + '\nSTART ' + match[2] + '\n' + match[3] : ev.time;
+            // ev.time の形式: 'OPEN ' + B列(時間) + ' / START ' + C列(開催場所)
+            // 例: "OPEN OPEN 19:00 / START 19:30 / START 札幌エルプラザ"
+            // → B列(OPEN 19:00 / START 19:30) で改行し C列(札幌エルプラザ) を表示
+            let raw = ev.time || '';
+            let sep = raw.lastIndexOf(' / START ');
+            let timeText = raw;
+            if (sep !== -1) {
+                let bCol = raw.substring(0, sep).replace(/^\s*OPEN\s+/, ''); // B列: OPEN 19:00 / START 19:30
+                let cCol = raw.substring(sep + ' / START '.length).trim();   // C列: 札幌エルプラザ
+                timeText = cCol ? bCol + '\n' + cCol : bCol;
+            }
             document.getElementById('disp-time').textContent = timeText;
             document.getElementById('disp-venue').classList.add('hidden');
             document.getElementById('disp-guest').classList.add('hidden');
