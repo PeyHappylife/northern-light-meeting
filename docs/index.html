@@ -99,6 +99,8 @@
                 backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
                 background: rgba(15, 23, 42, 0.62) !important;
             }
+            /* 背景に残るぼかしもスマホでは無効化（入力欄のタップ遅延を防止） */
+            .selector-section { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
         }
 
         .form-panel {
@@ -133,7 +135,7 @@
         .form-group.lg label { font-size: 21px; }
         .form-group.lg input[type="text"], .form-group.lg input[type="email"], .form-group.lg input[type="tel"] { font-size: 24px; }
         .required-badge { color: var(--accent-red); margin-left: 4px; }
-        .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="tel"] { width: 100%; padding: 12px; border: 1px solid var(--input-border); border-radius: 10px; font-size: 16px; background-color: #f8fafc; box-sizing: border-box; outline: none; transition: all 0.2s ease; -webkit-appearance: none; text-align: center; }
+        .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="tel"] { width: 100%; padding: 12px; border: 1px solid var(--input-border); border-radius: 10px; font-size: 16px; background-color: #f8fafc; box-sizing: border-box; outline: none; transition: all 0.2s ease; -webkit-appearance: none; text-align: center; touch-action: manipulation; }
         .form-group input:focus { border-color: #93c5fd; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.25); }
         .inline-radio-group { display: flex; gap: 24px; margin-top: 6px; padding: 4px 0; justify-content: center; }
         .inline-radio-label { display: flex; align-items: center; font-size: 15px; font-weight: bold; cursor: pointer; user-select: none; }
@@ -150,7 +152,7 @@
         /* 段階表示：1項目ずつ表示 */
         .form-step { display: none; }
         .form-step.step-visible { display: block; animation: step-in 0.4s ease; }
-        @keyframes step-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes step-in { from { opacity: 0; } to { opacity: 1; } }
         .submit-btn { width: 100%; background: linear-gradient(to right, #00aeef, #00b5f1); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); margin-top: 10px; transition: opacity 0.2s; -webkit-tap-highlight-color: transparent; position: relative; overflow: hidden; }
         .submit-btn .btn-text { position: relative; z-index: 1; }
         .submit-btn .btn-gauge { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,0.45); z-index: 0; }
