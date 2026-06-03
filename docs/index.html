@@ -72,18 +72,18 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0); backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+            background: rgba(15, 23, 42, 0);
             display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 16px; box-sizing: border-box;
-            pointer-events: none; transition: background 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease;
+            pointer-events: none; transition: background 0.35s ease;
         }
         .modal-overlay.active { pointer-events: auto; }
         
         .modal-overlay.active.anim-neon,
         .modal-overlay.active.anim-confetti,
-        .modal-overlay.active.anim-stardust { background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        .modal-overlay.active.anim-slide { background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
-        .modal-overlay.active.anim-theatrical { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        .modal-overlay.active.anim-transform { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        .modal-overlay.active.anim-stardust { background: rgba(15, 23, 42, 0.62); }
+        .modal-overlay.active.anim-slide { background: rgba(15, 23, 42, 0.45); }
+        .modal-overlay.active.anim-theatrical { background: rgba(15, 23, 42, 0.66); }
+        .modal-overlay.active.anim-transform { background: rgba(15, 23, 42, 0.58); }
 
         /* モーダルを開いている間は背景の無限アニメを停止（背後でのbackdrop-filter再計算を防ぎ、入力をすぐ可能に） */
         body.modal-open .btn-heartbeat,
@@ -419,13 +419,17 @@
         function openFormModal() {
             const overlay = document.getElementById('form-modal');
             overlay.className = "modal-overlay";
+            const fp = document.getElementById('form-panel-view');
+            if (fp) { fp.style.transform = ''; fp.style.webkitTransform = ''; } // 再入場アニメ用にリセット
             const anim = activeEvent && activeEvent.animation ? activeEvent.animation : "neon";
             overlay.classList.add("anim-" + anim);
-            setTimeout(() => { overlay.classList.add('active'); }, 10);
+            window.scrollTo(0, 0);              // overflow:hidden より先にスクロールを最上部へ（固定モーダルの位置ズレ防止）
             document.body.style.overflow = 'hidden';
             document.body.classList.add('modal-open');
-            window.scrollTo(0, 0);
+            setTimeout(() => { overlay.classList.add('active'); }, 10);
             if (typeof updateSteps === 'function') updateSteps();  // 1項目ずつ表示を初期化
+            // 入場アニメ完了後にパネルの transform を解除（コンポジタ層によるタップ判定ズレ/フォーカス不具合を回避）
+            setTimeout(function() { if (fp) { fp.style.transform = 'none'; fp.style.webkitTransform = 'none'; } }, 500);
         }
         function closeFormModal() {
             if (!document.getElementById('panel-success').classList.contains('hidden')) return;
