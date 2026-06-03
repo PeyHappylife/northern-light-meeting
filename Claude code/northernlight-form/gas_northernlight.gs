@@ -18,6 +18,13 @@ const SPREADSHEET_ID      = '1CdZSj0xJ56mBN7pSHsnqPm2JRlDxXxZCVTIXNC50LbY';
 const EVENT_LIST_SHEET    = 'イベント一覧';
 const MAIL_TEMPLATE_SHEET = 'メール内容';
 
+// 名簿(イベントシート)の列構成（16列）
+//  A申込日時 B名前 C フリガナ D メール E 電話 F 初回追加 G 一般予定人数 H 枚数
+//  I 金額 J アップダイヤ K 申込メール L ７日前 M ３日前 N 前日 O 当日感謝 P ７日後
+const ROSTER_HEADER = ['申込日時','名前','フリガナ','メールアドレス','電話番号','初回追加','一般予定人数','枚数','金額','アップダイヤ','申込メール','７日前','３日前','前日','当日感謝','７日後'];
+// 送信済みフラグの列番号（1始まり）
+const FLAG_COL = { receipt: 11, d7before: 12, d3before: 13, d1before: 14, sameday: 15, d7after: 16 };
+
 // スタンドアロンスクリプト対応: getActiveSpreadsheet()の代わりにopenByIdを使用
 function getSpreadsheet() {
   return SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -43,6 +50,7 @@ function doGet(e) {
       case 'createNewEvent':          return json(createNewEvent(p));
       case 'deleteEvent':             return json(deleteEvent(p));
       case 'registerParticipant':     return json(registerParticipant(p));
+      case 'sendAllToParticipant':    return json(sendAllToParticipant(p));
       case 'getMailTimes':            return json(getMailTimes());
       case 'setMailTime':             return json(setMailTime(p));
       default:                        return json({ error: 'Unknown action: ' + action });
@@ -162,8 +170,8 @@ function createNewEvent(p) {
 
   if (!ss.getSheetByName(sheetName)) {
     const evSheet = ss.insertSheet(sheetName);
-    evSheet.appendRow(['申込日時','名前','フリガナ','メールアドレス','電話番号','初回追加','一般予定人数','枚数','アップダイヤ','メール送信済み']);
-    evSheet.getRange(1, 1, 1, 10).setBackground('#e8f4f8').setFontWeight('bold');
+    evSheet.appendRow(ROSTER_HEADER);
+    evSheet.getRange(1, 1, 1, ROSTER_HEADER.length).setBackground('#e8f4f8').setFontWeight('bold');
   }
 
   // イベント作成時にリマインダートリガーを自動確保（権限が無くてもイベント作成は成功させる）
@@ -208,21 +216,27 @@ function registerParticipant(p) {
   let sheet = ss.getSheetByName(p.sheetName);
   if (!sheet) {
     sheet = ss.insertSheet(p.sheetName);
-    sheet.appendRow(['申込日時','名前','フリガナ','メールアドレス','電話番号','初回追加','一般予定人数','枚数','アップダイヤ','メール送信済み']);
-    sheet.getRange(1, 1, 1, 10).setBackground('#e8f4f8').setFontWeight('bold');
+    sheet.appendRow(ROSTER_HEADER);
+    sheet.getRange(1, 1, 1, ROSTER_HEADER.length).setBackground('#e8f4f8').setFontWeight('bold');
   }
 
+  const eventInfo = getEventInfoBySheetName(p.sheetName);
+  const tnum  = parseInt(String(p.tickets || '').replace(/[^0-9]/g, ''), 10) || 0;
+  const price = eventInfo && eventInfo.advancePrice ? eventInfo.advancePrice : 0;
+  const total = formatYen(price * tnum);   // I列: 金額 = 前売り単価 × 枚数
+
+  // A申込日時 B名前 C フリガナ D メール E 電話 F 初回 G 予定 H 枚数 I 金額 J アップダイヤ
   sheet.appendRow([
     Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss'),
     p.name || '', p.kana || '', p.email || '', p.phone || '',
-    p.firstTime || '', p.note || '', p.tickets || '', p.upline || '', ''
+    p.firstTime || '', p.note || '', p.tickets || '', total, p.upline || ''
   ]);
+  const lastRow = sheet.getLastRow();
 
-  // 申し込み確認メール即時送信
+  // 申し込み確認メール即時送信 → K列「申込メール」に送信済み記入
   try {
-    const eventInfo = getEventInfoBySheetName(p.sheetName);
     sendConfirmationEmail(p, eventInfo);
-    sheet.getRange(sheet.getLastRow(), 10).setValue('receipt');
+    sheet.getRange(lastRow, FLAG_COL.receipt).setValue('送信済み');
   } catch (mailErr) {
     Logger.log('確認メール送信エラー: ' + mailErr.toString());
   }
@@ -311,13 +325,13 @@ function sendScheduledEmails() {
   const currentHour = parseInt(Utilities.formatDate(new Date(), 'Asia/Tokyo', 'H'));
   const times = getMailTimes_internal();
 
-  // diff(日数) → テンプレート情報 のマップ（当日 diff=0 に変更）
+  // diff(日数) → テンプレート情報 のマップ（col=送信済みを記入する列番号）
   const allSchedule = {
-    '7':  { tpl: '7日前リマインダーメール',  flag: '7daybefore', hour: times.d7before },
-    '3':  { tpl: '3日前リマインダーメール',  flag: '3day',       hour: times.d3before },
-    '1':  { tpl: '前日リマインダーメール',    flag: '1day',       hour: times.d1before },
-    '0':  { tpl: '当日感謝メール',            flag: 'thanks',     hour: times.sameday  },
-    '-7': { tpl: '次回リマインドメール',       flag: 'next',       hour: times.d7after  }
+    '7':  { tpl: '7日前リマインダーメール',  col: FLAG_COL.d7before, hour: times.d7before },
+    '3':  { tpl: '3日前リマインダーメール',  col: FLAG_COL.d3before, hour: times.d3before },
+    '1':  { tpl: '前日リマインダーメール',    col: FLAG_COL.d1before, hour: times.d1before },
+    '0':  { tpl: '当日感謝メール',            col: FLAG_COL.sameday,  hour: times.sameday  },
+    '-7': { tpl: '次回リマインドメール',       col: FLAG_COL.d7after,  hour: times.d7after  }
   };
 
   // 今の時刻に送るべき種別だけ抽出
@@ -351,17 +365,67 @@ function sendScheduledEmails() {
     for (let i = 1; i < rows.length; i++) {
       const row   = rows[i];
       const email = String(row[3] || '');
-      const sent  = String(row[9] || '');
-      if (!email.includes('@') || sent.includes(timing.flag)) continue;
+      const already = String(row[timing.col - 1] || '');   // 該当種別の列が既に記入済みか
+      if (!email.includes('@') || already) continue;
 
       const data = buildMailData(row, eventDate, eventInfo);
       try {
         MailApp.sendEmail({ to: email, subject: applyTemplate(template.subject, data), htmlBody: applyTemplate(template.body, data) });
-        sheet.getRange(i + 1, 10).setValue(sent ? sent + ',' + timing.flag : timing.flag);
+        sheet.getRange(i + 1, timing.col).setValue('送信済み');   // 種別ごとの列へ記入
         Logger.log('送信: ' + timing.tpl + ' → ' + email);
       } catch (e) { Logger.log('送信エラー: ' + e + ' [' + email + ']'); }
     }
   });
+}
+
+// ─────────────────────────────────────────────
+//  指定の申込者へ全種別の自動返信を送信（テスト/手動用）
+//  対応する各列（K申込メール〜P７日後）に「送信済み」を記入
+// ─────────────────────────────────────────────
+function sendAllToParticipant(p) {
+  if (!p.sheetName) throw new Error('シート名が指定されていません');
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(p.sheetName);
+  if (!sheet) throw new Error('名簿シートが見つかりません: ' + p.sheetName);
+
+  const target = String(p.name || p.email || '').trim();
+  const eventInfo = getEventInfoBySheetName(p.sheetName);
+  const eventDate = new Date(
+    parseInt(p.sheetName.substring(0, 4)),
+    parseInt(p.sheetName.substring(4, 6)) - 1,
+    parseInt(p.sheetName.substring(6, 8))
+  );
+
+  const types = [
+    { tpl: 'オーダー受付メール',     col: FLAG_COL.receipt  }, // K 申込メール
+    { tpl: '7日前リマインダーメール', col: FLAG_COL.d7before }, // L
+    { tpl: '3日前リマインダーメール', col: FLAG_COL.d3before }, // M
+    { tpl: '前日リマインダーメール',   col: FLAG_COL.d1before }, // N
+    { tpl: '当日感謝メール',          col: FLAG_COL.sameday  }, // O
+    { tpl: '次回リマインドメール',     col: FLAG_COL.d7after  }  // P
+  ];
+
+  const rows = sheet.getDataRange().getValues();
+  let people = 0, mails = 0;
+  for (let i = 1; i < rows.length; i++) {
+    const name  = String(rows[i][1] || '').trim();
+    const email = String(rows[i][3] || '');
+    if (target && name !== target && email !== target) continue;
+    if (!email.includes('@')) continue;
+    people++;
+    const data = buildMailData(rows[i], eventDate, eventInfo);
+    types.forEach(function(t) {
+      const tpl = getMailTemplate(t.tpl);
+      if (!tpl) { Logger.log('テンプレなし: ' + t.tpl); return; }
+      try {
+        MailApp.sendEmail({ to: email, subject: applyTemplate(tpl.subject, data), htmlBody: applyTemplate(tpl.body, data) });
+        sheet.getRange(i + 1, t.col).setValue('送信済み');
+        mails++;
+      } catch (e) { Logger.log('送信エラー(' + t.tpl + '): ' + e); }
+    });
+  }
+  if (people === 0) throw new Error('対象の申込者が見つかりません: ' + target);
+  return { message: '対象 ' + people + ' 名へ ' + mails + ' 通送信し、各列に「送信済み」を記入しました。' };
 }
 
 // ─────────────────────────────────────────────
@@ -473,7 +537,7 @@ function buildMailData(row, eventDate, info) {
     name:      String(row[1] || ''), kana:  String(row[2] || ''),
     email:     String(row[3] || ''), phone: String(row[4] || ''),
     firstTime: String(row[5] || ''), note:  showNote ? String(row[6] || '') : '',
-    tickets:   String(row[7] || ''), upline:String(row[8] || ''),
+    tickets:   String(row[7] || ''), upline:String(row[9] || ''),   // J列: アップダイヤ
     fee:       formatYen(price * tnum),   // 金額 = 前売り単価 × 枚数
     date:      Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy年MM月dd日'),
     dateSlash: Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy/MM/dd'),

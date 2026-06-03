@@ -290,6 +290,7 @@
                         <div class="confirm-item"><div class="confirm-lbl">電話番号</div><div class="confirm-val" id="c-phone"></div></div>
                         <div class="confirm-item" id="confirm-note-item"><div class="confirm-lbl">一般予定人数</div><div class="confirm-val" id="c-note"></div></div>
                         <div class="confirm-item"><div class="confirm-lbl">枚数</div><div class="confirm-val" id="c-tickets"></div></div>
+                        <div class="confirm-item"><div class="confirm-lbl">合計</div><div class="confirm-val" id="c-total"></div></div>
                         <div class="confirm-item"><div class="confirm-lbl">アップダイヤ</div><div class="confirm-val" id="c-upline"></div></div>
                         <button onclick="submitDataToGAS()" id="btn-final" class="submit-btn" style="background: linear-gradient(to right, #0ed59e, #06b6d4);">申し込みを確定する</button>
                         <button onclick="backToInput()" class="submit-btn btn-secondary">修正する</button>
@@ -448,6 +449,12 @@
             const showNote = !(activeEvent && activeEvent.showNote === false);
             currentPayload = { sheetName: form.dataset.sheetName, name: document.getElementById('ins-name').value, kana: document.getElementById('ins-kana').value, email: document.getElementById('ins-email').value, phone: document.getElementById('ins-phone').value, note: showNote ? (document.getElementById('ins-note').value || 'なし') : '', tickets: document.querySelector('input[name="t-count"]:checked').value, upline: document.getElementById('ins-upline').value };
             document.getElementById('c-event').textContent = form.dataset.eventLabel; document.getElementById('c-name').textContent = currentPayload.name; document.getElementById('c-kana').textContent = currentPayload.kana; document.getElementById('c-email').textContent = currentPayload.email; document.getElementById('c-phone').textContent = currentPayload.phone; document.getElementById('c-note').textContent = currentPayload.note; document.getElementById('c-tickets').textContent = currentPayload.tickets + " 枚"; document.getElementById('c-upline').textContent = currentPayload.upline;
+            // 合計 = 前売り価格（イベント詳細から取得）× 枚数
+            let _price = 0;
+            if (activeEvent && activeEvent.details) { const _m = String(activeEvent.details).match(/前売り[^0-9]*([0-9,]+)/); if (_m) _price = parseInt(_m[1].replace(/,/g, ''), 10); }
+            const _tnum = parseInt(currentPayload.tickets, 10) || 0;
+            currentPayload.total = (_price && _tnum) ? (_price * _tnum).toLocaleString('en-US') + '円' : '';
+            document.getElementById('c-total').textContent = currentPayload.total || '—';
             document.getElementById('confirm-note-item').classList.toggle('hidden', !showNote);
             
             const inputPanel = document.getElementById('panel-input');
