@@ -578,7 +578,7 @@ function getEventInfoBySheetName(sheetName) {
     return {
       eventName: String(rows[i][7] || ''),                  // H列
       date:      Utilities.formatDate(ed, 'Asia/Tokyo', 'yyyy/MM/dd'),
-      dateMd:    Utilities.formatDate(ed, 'Asia/Tokyo', 'MM/dd'),  // 件名用 MM/DD
+      dateMd:    Utilities.formatDate(ed, 'Asia/Tokyo', 'MM月dd日'),  // 件名用 MM/DD
       time:      String(rows[i][1] || 'OPEN 19:00 / START 19:30'), // B列: 時間
       venue:     String(rows[i][2] || ''),                  // C列: 開催場所
       guest:     String(rows[i][3] || ''),                  // D列: ゲスト名
@@ -651,7 +651,7 @@ function buildMailData(row, eventDate, info) {
     fee:       formatYen(price * tnum),   // 金額 = 前売り単価 × 枚数
     date:      Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy年MM月dd日'),
     dateSlash: Utilities.formatDate(eventDate, 'Asia/Tokyo', 'yyyy/MM/dd'),
-    dateMd:    Utilities.formatDate(eventDate, 'Asia/Tokyo', 'MM/dd'),
+    dateMd:    Utilities.formatDate(eventDate, 'Asia/Tokyo', 'MM月dd日'),
     time:      info ? info.time      : '',
     venue:     info ? info.venue     : '',
     guest:     info ? info.guest     : '',
