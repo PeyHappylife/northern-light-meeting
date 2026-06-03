@@ -334,6 +334,20 @@
                 for(let i=1; i<=10; i++) { h += `<label class="inline-radio-label"><input type="radio" name="t-count" value="${i}">${i}</label>`; }
                 grid.innerHTML = h;
 
+                // 必須入力の標準メッセージを人間味のある文言に変更
+                document.querySelectorAll('#reg-form input[required]').forEach(function(el) {
+                    el.addEventListener('invalid', function() {
+                        if (el.validity.valueMissing) {
+                            el.setCustomValidity('ここのご記入をお願いします🙏');
+                        } else if (el.validity.typeMismatch) {
+                            el.setCustomValidity('メールアドレスの形式をご確認ください📧');
+                        } else {
+                            el.setCustomValidity('');
+                        }
+                    });
+                    el.addEventListener('input', function() { el.setCustomValidity(''); });
+                });
+
                 setTimeout(function() {
                     if (globalEvents.length === 0 && document.getElementById('app-content').classList.contains('hidden')) {
                         document.getElementById('loading-gate').innerHTML = `
