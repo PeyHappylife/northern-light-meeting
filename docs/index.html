@@ -455,8 +455,20 @@
             const ev = globalEvents.find(e => e.id === id);
             if(ev) { selectEvent(ev); document.getElementById('placeholder-view').classList.add('hidden'); document.getElementById('details-view').classList.remove('hidden'); window.scrollTo(0, 0); }
         }
+        // アニメーション表記を英語キーに正規化（日本語ラベル・絵文字付きでも判定OK / 旧データの英語キーもそのまま通る）
+        function normalizeAnim(a) {
+            a = String(a || '');
+            if (/slide|スライド/i.test(a))      return 'slide';
+            if (/transform|変形/i.test(a))      return 'transform';
+            if (/theatrical|シアター/i.test(a)) return 'theatrical';
+            if (/confetti|紙吹雪/i.test(a))     return 'confetti';
+            if (/stardust|宇宙/i.test(a))       return 'stardust';
+            if (/neon|ネオン/i.test(a))         return 'neon';
+            return 'neon';
+        }
         function selectEvent(ev) {
             activeEvent = ev;
+            activeEvent.animation = normalizeAnim(activeEvent.animation);
             document.getElementById('disp-title').textContent = ev.eventName || "NorthernLight Meeting";
             document.getElementById('disp-date').textContent = ev.date;
             // 時間(B列) / 開催場所(C列) / ゲスト名(D列) を改行表示。
