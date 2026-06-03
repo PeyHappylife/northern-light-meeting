@@ -21,7 +21,7 @@ const MAIL_TEMPLATE_SHEET = 'メール内容';
 // 名簿(イベントシート)の列構成（16列）
 //  A申込日時 B名前 C フリガナ D メール E 電話 F 初回追加 G 一般予定人数 H 枚数
 //  I 金額 J アップダイヤ K 申込メール L ７日前 M ３日前 N 前日 O 当日感謝 P ７日後
-const ROSTER_HEADER = ['申込日時','名前','フリガナ','メールアドレス','電話番号','初回追加','一般予定人数','枚数','金額','アップダイヤ','申込メール','７日前','３日前','前日','当日感謝','７日後'];
+const ROSTER_HEADER = ['申込日時','名前','フリガナ','メールアドレス','電話番号','初回追加','一般予定人数','枚数','金額','アップライン','申込メール','７日前','３日前','前日','当日感謝','７日後'];
 // 送信済みフラグの列番号（1始まり）
 const FLAG_COL = { receipt: 11, d7before: 12, d3before: 13, d1before: 14, sameday: 15, d7after: 16 };
 
@@ -379,6 +379,17 @@ function sendScheduledEmails() {
 }
 
 // ─────────────────────────────────────────────
+//  メール送信権限(script.send_mail)を承認するための関数。
+//  エディタでこの関数を1回実行 →「許可」を押すと送信権限が付与される。
+//  （実行すると自分宛に確認メールが1通届きます）
+// ─────────────────────────────────────────────
+function authorizeMail() {
+  const me = Session.getEffectiveUser().getEmail();
+  MailApp.sendEmail(me, '【認証テスト】NorthernLight メール送信', 'メール送信権限が有効になりました。このメールが届けば成功です。');
+  return 'sent to ' + me;
+}
+
+// ─────────────────────────────────────────────
 //  指定の申込者へ全種別の自動返信を送信（テスト/手動用）
 //  対応する各列（K申込メール〜P７日後）に「送信済み」を記入
 // ─────────────────────────────────────────────
@@ -407,6 +418,7 @@ function sendAllToParticipant(p) {
 
   const rows = sheet.getDataRange().getValues();
   let people = 0, mails = 0;
+  const diag = [];   // 診断: 各テンプレの結果をレスポンスで返す
   for (let i = 1; i < rows.length; i++) {
     const name  = String(rows[i][1] || '').trim();
     const email = String(rows[i][3] || '');
@@ -416,16 +428,22 @@ function sendAllToParticipant(p) {
     const data = buildMailData(rows[i], eventDate, eventInfo);
     types.forEach(function(t) {
       const tpl = getMailTemplate(t.tpl);
-      if (!tpl) { Logger.log('テンプレなし: ' + t.tpl); return; }
+      if (!tpl) { diag.push(t.tpl + ': テンプレ未検出'); return; }
       try {
         MailApp.sendEmail({ to: email, subject: applyTemplate(tpl.subject, data), htmlBody: applyTemplate(tpl.body, data) });
         sheet.getRange(i + 1, t.col).setValue('送信済み');
         mails++;
-      } catch (e) { Logger.log('送信エラー(' + t.tpl + '): ' + e); }
+        diag.push(t.tpl + ': 送信OK');
+      } catch (e) { diag.push(t.tpl + ': 送信NG → ' + e); }
     });
   }
   if (people === 0) throw new Error('対象の申込者が見つかりません: ' + target);
-  return { message: '対象 ' + people + ' 名へ ' + mails + ' 通送信し、各列に「送信済み」を記入しました。' };
+  return {
+    message: '対象 ' + people + ' 名へ ' + mails + ' 通送信。',
+    quota: (function(){ try { return MailApp.getRemainingDailyQuota(); } catch(e){ return '取得不可: ' + e; } })(),
+    mailSheetFound: !!getSpreadsheet().getSheetByName(MAIL_TEMPLATE_SHEET),
+    diag: diag
+  };
 }
 
 // ─────────────────────────────────────────────
@@ -518,7 +536,7 @@ function applyTemplate(template, data) {
   const jpMap = {
     '名前': 'name', 'フルネーム': 'name', 'フリガナ': 'kana',
     'メール': 'email', 'メールアドレス': 'email', '電話': 'phone', '電話番号': 'phone',
-    '一般予定人数': 'note', '予定人数': 'note', '枚数': 'tickets', '金額': 'fee', 'アップダイヤ': 'upline',
+    '一般予定人数': 'note', '予定人数': 'note', '枚数': 'tickets', '金額': 'fee', 'アップライン': 'upline', 'アップダイヤ': 'upline',
     '日付': 'date', '開催日': 'date', '日時': 'time', '時間': 'time',
     '会場': 'venue', '開催場所': 'venue', 'ゲスト': 'guest', 'ゲスト名': 'guest', 'イベント名': 'eventName'
   };
@@ -526,6 +544,8 @@ function applyTemplate(template, data) {
     const v = data[jpMap[jp]];
     r = r.replace(new RegExp('\\[' + jp + '\\]', 'g'), v == null ? '' : v);
   });
+  // 本文中の改行(\n)を<br>に変換（雛形をセル内の自然な改行で書けるように）
+  r = r.replace(/\n/g, '<br>');
   return r;
 }
 
