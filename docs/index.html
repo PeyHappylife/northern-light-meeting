@@ -85,7 +85,23 @@
         .modal-overlay.active.anim-theatrical { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .modal-overlay.active.anim-transform { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 
-        .form-panel { 
+        /* モーダルを開いている間は背景の無限アニメを停止（背後でのbackdrop-filter再計算を防ぎ、入力をすぐ可能に） */
+        body.modal-open .btn-heartbeat,
+        body.modal-open .main-title { animation: none !important; will-change: auto !important; }
+        /* スマホは重い背景ぼかしを無効化（GPU負荷によるフリーズを防止／PCはぼかし維持） */
+        @media (max-width: 640px) {
+            .modal-overlay.active.anim-neon,
+            .modal-overlay.active.anim-confetti,
+            .modal-overlay.active.anim-stardust,
+            .modal-overlay.active.anim-slide,
+            .modal-overlay.active.anim-theatrical,
+            .modal-overlay.active.anim-transform {
+                backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+                background: rgba(15, 23, 42, 0.62) !important;
+            }
+        }
+
+        .form-panel {
             background: var(--card-bg); border-radius: 24px; padding: 26px 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.8);
             width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; opacity: 0; pointer-events: none;
         }
@@ -405,6 +421,7 @@
             overlay.classList.add("anim-" + anim);
             setTimeout(() => { overlay.classList.add('active'); }, 10);
             document.body.style.overflow = 'hidden';
+            document.body.classList.add('modal-open');
             window.scrollTo(0, 0);
             if (typeof updateSteps === 'function') updateSteps();  // 1項目ずつ表示を初期化
         }
@@ -412,6 +429,7 @@
             if (!document.getElementById('panel-success').classList.contains('hidden')) return;
             document.getElementById('form-modal').classList.remove('active');
             document.body.style.overflow = '';
+            document.body.classList.remove('modal-open');
             if (confettiLoopInterval) {
                 clearInterval(confettiLoopInterval);
                 confettiLoopInterval = null;
