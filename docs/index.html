@@ -423,8 +423,15 @@
             if (fp) { fp.style.transform = ''; fp.style.webkitTransform = ''; } // 再入場アニメ用にリセット
             const anim = activeEvent && activeEvent.animation ? activeEvent.animation : "neon";
             overlay.classList.add("anim-" + anim);
-            window.scrollTo(0, 0);              // overflow:hidden より先にスクロールを最上部へ（固定モーダルの位置ズレ防止）
-            document.body.style.overflow = 'hidden';
+            // 堅牢なスクロールロック：bodyを固定し現在のスクロール量を打ち消す
+            // → 固定モーダルが常にビューポート基準になり、スクロールした後でも入力欄のタップ判定が正確になる（Chromeのズレ対策）
+            const sy = window.pageYOffset || document.documentElement.scrollTop || 0;
+            document.body.dataset.scrollLock = sy;
+            document.body.style.position = 'fixed';
+            document.body.style.top = (-sy) + 'px';
+            document.body.style.left = '0';
+            document.body.style.right = '0';
+            document.body.style.width = '100%';
             document.body.classList.add('modal-open');
             setTimeout(() => { overlay.classList.add('active'); }, 10);
             if (typeof updateSteps === 'function') updateSteps();  // 1項目ずつ表示を初期化
@@ -434,8 +441,15 @@
         function closeFormModal() {
             if (!document.getElementById('panel-success').classList.contains('hidden')) return;
             document.getElementById('form-modal').classList.remove('active');
+            const sy = parseInt(document.body.dataset.scrollLock || '0', 10);
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.left = '';
+            document.body.style.right = '';
+            document.body.style.width = '';
             document.body.style.overflow = '';
             document.body.classList.remove('modal-open');
+            window.scrollTo(0, sy);
             if (confettiLoopInterval) {
                 clearInterval(confettiLoopInterval);
                 confettiLoopInterval = null;
