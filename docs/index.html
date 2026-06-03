@@ -334,18 +334,32 @@
                 for(let i=1; i<=10; i++) { h += `<label class="inline-radio-label"><input type="radio" name="t-count" value="${i}">${i}</label>`; }
                 grid.innerHTML = h;
 
+                // 電話番号の形式チェック（10桁/11桁、11桁は070/080/090始まり）
+                function validatePhone(el) {
+                    const digits = el.value.replace(/[^0-9]/g, '');
+                    if (el.value.trim() === '') { el.setCustomValidity(''); return; } // 空は必須チェックが処理
+                    if (digits.length !== 10 && digits.length !== 11) {
+                        el.setCustomValidity('電話番号は10桁または11桁でご入力ください📞');
+                    } else if (digits.length === 11 && !/^0[789]0/.test(digits)) {
+                        el.setCustomValidity('携帯番号（11桁）は 070・080・090 で始まる番号でご入力ください📱');
+                    } else {
+                        el.setCustomValidity('');
+                    }
+                }
                 // 必須入力の標準メッセージを人間味のある文言に変更
                 document.querySelectorAll('#reg-form input[required]').forEach(function(el) {
                     el.addEventListener('invalid', function() {
                         if (el.validity.valueMissing) {
-                            el.setCustomValidity('ここのご記入をお願いします🙏');
+                            el.setCustomValidity('こちらにもご記入をお願いします🙏');
                         } else if (el.validity.typeMismatch) {
                             el.setCustomValidity('メールアドレスの形式をご確認ください📧');
-                        } else {
-                            el.setCustomValidity('');
                         }
+                        // 電話の形式エラー(customError)は input 側で設定済みなので上書きしない
                     });
-                    el.addEventListener('input', function() { el.setCustomValidity(''); });
+                    el.addEventListener('input', function() {
+                        if (el.id === 'ins-phone') validatePhone(el);
+                        else el.setCustomValidity('');
+                    });
                 });
 
                 setTimeout(function() {
