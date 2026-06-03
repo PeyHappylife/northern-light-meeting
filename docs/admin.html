@@ -99,6 +99,14 @@
                 </div>
                 <div class="form-group"><label>詳細入力欄（複数行入力可能）</label><textarea id="event-details" rows="5" placeholder="上のプルダウンから選ぶか、ここに新しく入力してください。"></textarea></div>
 
+                <div class="form-group">
+                    <label>「初めて参加される一般の方」欄の表示</label>
+                    <select id="event-shownote">
+                        <option value="有">有（申込画面・確認画面・メールに表示する）</option>
+                        <option value="無">無（表示しない）</option>
+                    </select>
+                </div>
+
                 <div class="anim-submit-section">
                     <!-- メール送信時刻設定 -->
                     <div class="mail-time-section">
@@ -289,6 +297,7 @@
             const venue = getFieldValue('event-venue-sel', 'event-venue-new');
             const guest = getFieldValue('event-guest-sel', 'event-guest-new');
             const details = document.getElementById('event-details').value.trim();
+            const showNote = document.getElementById('event-shownote').value;
 
             if (!name || !date || !openTime || !startTime || !venue || !guest) {
                 alert('すべての必須項目を入力してください。');
@@ -307,7 +316,8 @@
                 venue: venue,
                 guest: guest,
                 details: details,
-                animation: animType
+                animation: animType,
+                showNote: showNote
             });
 
             fetch(GAS_API_URL + '?' + params.toString())
