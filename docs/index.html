@@ -130,6 +130,7 @@
         
         .form-note { font-size: 12px; font-weight: bold; line-height: 1.6; margin-top: 6px; text-align: center; }
         .form-note.red { color: var(--accent-red); }
+        .field-err { display: none; color: var(--accent-red); font-size: 13px; font-weight: bold; margin-top: 6px; text-align: center; line-height: 1.5; }
         .submit-btn { width: 100%; background: linear-gradient(to right, #00aeef, #00b5f1); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); margin-top: 10px; transition: opacity 0.2s; -webkit-tap-highlight-color: transparent; position: relative; overflow: hidden; }
         .submit-btn .btn-text { position: relative; z-index: 1; }
         .submit-btn .btn-gauge { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,0.45); z-index: 0; }
@@ -285,13 +286,13 @@
                     
                     <div id="panel-input">
                         <p class="form-title">こちらからお申し込みください。</p>
-                        <form id="reg-form" onsubmit="goToConfirm(event)">
+                        <form id="reg-form" onsubmit="goToConfirm(event)" novalidate>
                             <div class="form-group lg"><label>フルネーム<span class="required-badge">＊</span></label><input type="text" id="ins-name" placeholder="例：山田 太郎" required></div>
                             <div class="form-group lg"><label>フリガナ<span class="required-badge">＊</span></label><input type="text" id="ins-kana" placeholder="例：やまだ たろう" required></div>
                             <div class="form-group lg"><label>メールアドレス<span class="required-badge">＊</span></label><input type="email" id="ins-email" placeholder="info@example.com" style="margin-bottom:8px;" required><input type="email" id="ins-email-chk" placeholder="確認用" required></div>
                             <div class="form-group lg"><label>電話番号<span class="required-badge">＊</span></label><input type="tel" id="ins-phone" placeholder="090-1234-5678" required></div>
                             <div class="form-group" id="note-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
-                            <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div></div>
+                            <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div><div class="field-err" id="ticket-err"></div></div>
                             <div class="form-group"><label>アップライン<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
                             <button type="submit" class="submit-btn">確認画面へ →</button>
                         </form>
@@ -334,32 +335,14 @@
                 for(let i=1; i<=10; i++) { h += `<label class="inline-radio-label"><input type="radio" name="t-count" value="${i}">${i}</label>`; }
                 grid.innerHTML = h;
 
-                // 電話番号の形式チェック（10桁/11桁、11桁は070/080/090始まり）
-                function validatePhone(el) {
-                    const digits = el.value.replace(/[^0-9]/g, '');
-                    if (el.value.trim() === '') { el.setCustomValidity(''); return; } // 空は必須チェックが処理
-                    if (digits.length !== 10 && digits.length !== 11) {
-                        el.setCustomValidity('電話番号は10桁または11桁でご入力ください📞');
-                    } else if (digits.length === 11 && !/^0[789]0/.test(digits)) {
-                        el.setCustomValidity('携帯番号（11桁）は 070・080・090 で始まる番号でご入力ください📱');
-                    } else {
-                        el.setCustomValidity('');
-                    }
-                }
-                // 必須入力の標準メッセージを人間味のある文言に変更
+                // 入力されるまで消えないインラインエラー：入力/フォーカス外しで都度判定
                 document.querySelectorAll('#reg-form input[required]').forEach(function(el) {
-                    el.addEventListener('invalid', function() {
-                        if (el.validity.valueMissing) {
-                            el.setCustomValidity('こちらにもご記入をお願いします🙏');
-                        } else if (el.validity.typeMismatch) {
-                            el.setCustomValidity('メールアドレスの形式をご確認ください📧');
-                        }
-                        // 電話の形式エラー(customError)は input 側で設定済みなので上書きしない
-                    });
-                    el.addEventListener('input', function() {
-                        if (el.id === 'ins-phone') validatePhone(el);
-                        else el.setCustomValidity('');
-                    });
+                    el.addEventListener('input', function() { updateFieldError(el); });
+                    el.addEventListener('blur',  function() { updateFieldError(el); });
+                });
+                // 枚数を選んだらエラーを消す
+                document.getElementById('ticket-grid').addEventListener('change', function() {
+                    const te = document.getElementById('ticket-err'); if (te) te.style.display = 'none';
                 });
 
                 setTimeout(function() {
@@ -494,10 +477,58 @@
             document.getElementById('note-group').classList.toggle('hidden', !showNote);
             document.getElementById('note-firsttime').classList.toggle('hidden', !showNote);
         }
+        // 入力欄のエラー文言を判定（空ならメッセージを返す）
+        function fieldMessage(el) {
+            const v = el.value.trim();
+            if (el.id === 'ins-phone') {
+                const d = el.value.replace(/[^0-9]/g, '');
+                if (v === '') return 'こちらにもご記入をお願いします🙏';
+                if (d.length !== 10 && d.length !== 11) return '電話番号は10桁または11桁でご入力ください📞';
+                if (d.length === 11 && !/^0[789]0/.test(d)) return '携帯番号（11桁）は 070・080・090 で始まる番号でご入力ください📱';
+                return '';
+            }
+            if (el.id === 'ins-email-chk') {
+                if (v === '') return 'こちらにもご記入をお願いします🙏';
+                if (el.value !== document.getElementById('ins-email').value) return 'メールアドレスが一致しません';
+                return '';
+            }
+            if (v === '') return 'こちらにもご記入をお願いします🙏';
+            if (el.type === 'email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(el.value)) return 'メールアドレスの形式をご確認ください📧';
+            return '';
+        }
+        // インラインエラー要素を取得（無ければ生成）
+        function getFieldErrEl(el) {
+            let e = el.nextElementSibling;
+            if (!e || !e.classList || !e.classList.contains('field-err')) {
+                e = document.createElement('div');
+                e.className = 'field-err';
+                el.insertAdjacentElement('afterend', e);
+            }
+            return e;
+        }
+        // 判定して表示/非表示。有効なら true
+        function updateFieldError(el) {
+            const msg = fieldMessage(el);
+            const e = getFieldErrEl(el);
+            if (msg) { e.textContent = msg; e.style.display = 'block'; return false; }
+            e.style.display = 'none'; return true;
+        }
+
         function goToConfirm(e) {
-            e.preventDefault(); if(document.getElementById('ins-email').value !== document.getElementById('ins-email-chk').value) { alert("メールアドレスが一致しません。"); return; }
+            e.preventDefault();
+            // 必須・形式チェック（入力されるまで消えないインラインエラー）
+            let firstInvalid = null;
+            document.querySelectorAll('#reg-form input[required]').forEach(function(el) {
+                if (!updateFieldError(el) && !firstInvalid) firstInvalid = el;
+            });
+            // 枚数チェック
             const ticketEl = document.querySelector('input[name="t-count"]:checked');
-            if (!ticketEl) { alert("枚数を選択してください。"); return; }
+            const ticketErr = document.getElementById('ticket-err');
+            if (!ticketEl) {
+                if (ticketErr) { ticketErr.textContent = '枚数を選んでください🙏'; ticketErr.style.display = 'block'; }
+                if (!firstInvalid) firstInvalid = document.getElementById('ticket-grid');
+            } else if (ticketErr) { ticketErr.style.display = 'none'; }
+            if (firstInvalid) { firstInvalid.scrollIntoView({ block: 'center' }); if (firstInvalid.focus) firstInvalid.focus(); return; }
             const form = document.getElementById('reg-form');
             const showNote = !(activeEvent && activeEvent.showNote === false);
             currentPayload = { sheetName: form.dataset.sheetName, name: document.getElementById('ins-name').value, kana: document.getElementById('ins-kana').value, email: document.getElementById('ins-email').value, phone: document.getElementById('ins-phone').value, note: showNote ? (document.getElementById('ins-note').value || 'なし') : '', tickets: ticketEl.value, upline: document.getElementById('ins-upline').value };
