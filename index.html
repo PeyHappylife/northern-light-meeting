@@ -415,16 +415,21 @@
             document.getElementById('disp-date').textContent = ev.date;
             // ev.time の形式: 'OPEN ' + B列(時間) + ' / START ' + C列(開催場所)
             // 例: "OPEN OPEN 19:00 / START 19:30 / START 札幌エルプラザ"
-            // → B列(OPEN 19:00 / START 19:30) で改行し C列(札幌エルプラザ) を表示
+            // → B列(時間) / C列(開催場所) / D列(ゲスト名) を改行で表示
             let raw = ev.time || '';
             let sep = raw.lastIndexOf(' / START ');
-            let timeText = raw;
+            let lines = [];
             if (sep !== -1) {
                 let bCol = raw.substring(0, sep).replace(/^\s*OPEN\s+/, ''); // B列: OPEN 19:00 / START 19:30
                 let cCol = raw.substring(sep + ' / START '.length).trim();   // C列: 札幌エルプラザ
-                timeText = cCol ? bCol + '\n' + cCol : bCol;
+                if (bCol) lines.push(bCol);
+                if (cCol) lines.push(cCol);
+            } else if (raw) {
+                lines.push(raw);
             }
-            document.getElementById('disp-time').textContent = timeText;
+            let dCol = (ev.venue || '').trim();                              // D列: ゲスト名
+            if (dCol) lines.push(dCol);
+            document.getElementById('disp-time').textContent = lines.join('\n');
             document.getElementById('disp-venue').classList.add('hidden');
             document.getElementById('disp-guest').classList.add('hidden');
             const detailsBox = document.getElementById('disp-details');
