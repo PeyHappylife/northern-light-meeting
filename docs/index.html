@@ -61,7 +61,7 @@
         .event-time { font-size: 18px; font-weight: bold; color: #0369a1; margin-bottom: 16px; white-space: pre-line; line-height: 1.6; }
         .event-venue { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
         .event-guest { font-size: 18px; font-weight: bold; margin-bottom: 20px; }
-        .event-description { white-space: pre-wrap; text-align: center; background: rgba(255,255,255,0.65); padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; color: #475569; line-height: 1.6; border: 1px solid rgba(255,255,255,0.6); word-break: break-all; }
+        .event-description { white-space: pre-wrap; text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #0369a1; line-height: 1.6; word-break: break-all; }
         .divider { width: 60px; height: 2px; background-color: var(--accent-green); margin: 0 auto 20px auto; }
         .note-green { color: var(--accent-green); font-weight: bold; font-size: 15px; margin-bottom: 18px; line-height: 1.6;}
         .note-blue { color: #2563eb; font-weight: bold; font-size: 15px; line-height: 1.6; }
@@ -131,6 +131,10 @@
         .form-note { font-size: 12px; font-weight: bold; line-height: 1.6; margin-top: 6px; text-align: center; }
         .form-note.red { color: var(--accent-red); }
         .field-err { display: none; color: var(--accent-red); font-size: 13px; font-weight: bold; margin-top: 6px; text-align: center; line-height: 1.5; }
+        /* 段階表示：1項目ずつ表示 */
+        .form-step { display: none; }
+        .form-step.step-visible { display: block; animation: step-in 0.4s ease; }
+        @keyframes step-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .submit-btn { width: 100%; background: linear-gradient(to right, #00aeef, #00b5f1); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); margin-top: 10px; transition: opacity 0.2s; -webkit-tap-highlight-color: transparent; position: relative; overflow: hidden; }
         .submit-btn .btn-text { position: relative; z-index: 1; }
         .submit-btn .btn-gauge { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,0.45); z-index: 0; }
@@ -269,8 +273,6 @@
                 <div id="disp-venue" class="event-venue"></div>
                 <div id="disp-guest" class="event-guest"></div>
                 <div id="disp-details" class="event-description hidden"></div>
-                <div class="divider"></div>
-                <div class="note-blue">＊プライムカスタマーの方は有料となります。<br>前売り 1,500円 / 当日券 2,000円<br>現地でお支払いください。</div>
                 
                 <button onclick="openFormModal()" class="submit-btn" style="max-width: 360px; margin: 26px auto 0 auto; display: block;">お申し込み手続きへ進む →</button>
             </div>
@@ -335,15 +337,22 @@
                 for(let i=1; i<=10; i++) { h += `<label class="inline-radio-label"><input type="radio" name="t-count" value="${i}">${i}</label>`; }
                 grid.innerHTML = h;
 
-                // 入力されるまで消えないインラインエラー：入力/フォーカス外しで都度判定
+                // 段階表示：各項目（form-group）と確認ボタンを step 化
+                document.querySelectorAll('#reg-form > .form-group').forEach(function(g) { g.classList.add('form-step'); });
+                const _toConfirmBtn = document.querySelector('#reg-form button[type="submit"]');
+                if (_toConfirmBtn) _toConfirmBtn.classList.add('form-step');
+
+                // 入力されるまで消えないインラインエラー：入力/フォーカス外しで都度判定＋段階表示更新
                 document.querySelectorAll('#reg-form input[required]').forEach(function(el) {
-                    el.addEventListener('input', function() { updateFieldError(el); });
-                    el.addEventListener('blur',  function() { updateFieldError(el); });
+                    el.addEventListener('input', function() { updateFieldError(el); updateSteps(); });
+                    el.addEventListener('blur',  function() { updateFieldError(el); updateSteps(); });
                 });
-                // 枚数を選んだらエラーを消す
+                // 枚数を選んだらエラーを消す＋次を表示
                 document.getElementById('ticket-grid').addEventListener('change', function() {
                     const te = document.getElementById('ticket-err'); if (te) te.style.display = 'none';
+                    updateSteps();
                 });
+                updateSteps();
 
                 setTimeout(function() {
                     if (globalEvents.length === 0 && document.getElementById('app-content').classList.contains('hidden')) {
@@ -386,6 +395,7 @@
             overlay.classList.add("anim-" + anim);
             setTimeout(() => { overlay.classList.add('active'); }, 10);
             document.body.style.overflow = 'hidden';
+            if (typeof updateSteps === 'function') updateSteps();  // 1項目ずつ表示を初期化
         }
         function closeFormModal() {
             if (!document.getElementById('panel-success').classList.contains('hidden')) return;
@@ -506,6 +516,32 @@
             }
             return e;
         }
+        // 段階表示：そのステップ（項目）が入力完了か
+        function stepComplete(stepEl) {
+            if (stepEl.id === 'note-group') return true; // 任意項目
+            const reqs = stepEl.querySelectorAll('input[required]');
+            if (reqs.length) {
+                for (let i = 0; i < reqs.length; i++) { if (fieldMessage(reqs[i]) !== '') return false; }
+                return true;
+            }
+            if (stepEl.querySelector('input[name="t-count"]')) {
+                return !!stepEl.querySelector('input[name="t-count"]:checked'); // 枚数
+            }
+            return true;
+        }
+        // 上から順に、前の項目が完了したら次を表示（表示済みは消さない＝スティッキー）
+        function updateSteps() {
+            const groups = document.querySelectorAll('#reg-form > .form-group');
+            const btn = document.querySelector('#reg-form button[type="submit"]');
+            let chainOk = true;
+            groups.forEach(function(g) {
+                const noteHidden = (g.id === 'note-group') && g.classList.contains('hidden');
+                if (chainOk && !noteHidden) g.classList.add('step-visible');
+                if (!noteHidden && !stepComplete(g)) chainOk = false;
+            });
+            if (btn) btn.classList.toggle('step-visible', chainOk); // 全完了で確認ボタン表示
+        }
+
         // 判定して表示/非表示。有効なら true
         function updateFieldError(el) {
             const msg = fieldMessage(el);
@@ -572,6 +608,7 @@
                 inputPanel.style.opacity = '0';
                 setTimeout(function() { inputPanel.style.opacity = '1'; }, 20);
                 document.getElementById('form-panel-view').scrollTop = 0;
+                if (typeof updateSteps === 'function') updateSteps();
             }, 150);
         }
         function submitDataToGAS() {
