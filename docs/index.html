@@ -129,6 +129,15 @@
         .submit-btn .btn-text { position: relative; z-index: 1; }
         .submit-btn .btn-gauge { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,0.45); z-index: 0; }
         .submit-btn .btn-gauge.fill { width: 100%; transition: width 0.9s linear; }
+        #btn-final .btn-gauge.fill { transition: width 2.5s ease-out; }
+        /* 完了画面：メール送信アニメーション */
+        .mail-send-anim { font-size: 46px; display: inline-block; margin-bottom: 14px; animation: mail-fly 1.8s ease-in-out infinite; }
+        @keyframes mail-fly {
+            0%   { transform: translate(-34px, 12px) rotate(-12deg) scale(0.85); opacity: 0; }
+            20%  { opacity: 1; }
+            55%  { transform: translate(8px, -8px) rotate(8deg) scale(1.08); opacity: 1; }
+            100% { transform: translate(58px, -34px) rotate(16deg) scale(0.75); opacity: 0; }
+        }
         .btn-secondary { background: #e2e8f0; color: #475569; margin-top: 12px; box-shadow: none; }
         
         /* 確認画面項目の中央揃え設定 */
@@ -279,7 +288,7 @@
                             <div class="form-group" id="note-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
                             <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div></div>
                             <div class="form-group"><label>アップライン<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
-                            <button type="submit" class="submit-btn" id="btn-to-confirm"><span class="btn-gauge"></span><span class="btn-text">確認画面へ →</span></button>
+                            <button type="submit" class="submit-btn">確認画面へ →</button>
                         </form>
                     </div>
                     
@@ -295,12 +304,12 @@
                         <div class="confirm-item"><div class="confirm-lbl">枚数</div><div class="confirm-val" id="c-tickets"></div></div>
                         <div class="confirm-item"><div class="confirm-lbl">合計</div><div class="confirm-val" id="c-total"></div></div>
                         <div class="confirm-item"><div class="confirm-lbl">アップライン</div><div class="confirm-val" id="c-upline"></div></div>
-                        <button onclick="submitDataToGAS()" id="btn-final" class="submit-btn" style="background: linear-gradient(to right, #0ed59e, #06b6d4);">申し込みを確定する</button>
+                        <button onclick="submitDataToGAS()" id="btn-final" class="submit-btn" style="background: linear-gradient(to right, #0ed59e, #06b6d4);"><span class="btn-gauge"></span><span class="btn-text">申し込みを確定する</span></button>
                         <button onclick="backToInput()" class="submit-btn btn-secondary">修正する</button>
                     </div>
                     
                     <div id="panel-success" class="hidden" style="text-align:center; padding:52px 16px;">
-                        <div style="font-size:54px; color:var(--accent-green); margin-bottom:16px; transform: scale(0); animation: pop-check 0.4s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">✓</div>
+                        <div class="mail-send-anim" aria-hidden="true">✉️</div>
                         <h2 style="font-size:22px; margin:0 0 18px 0;">お申し込み完了しました</h2>
                         <p style="color:var(--text-main); font-size:14px; font-weight:bold; line-height:1.9; margin:0;">お申し込みありがとうございます。<br>申し込み内容をメールアドレスに送信したのでご確認お願いいたします。<br>当日のご来場をお待ちしております。</p>
                     </div>
@@ -460,37 +469,26 @@
             document.getElementById('c-total').textContent = currentPayload.total || '—';
             document.getElementById('confirm-note-item').classList.toggle('hidden', !showNote);
 
-            // ボタンに左→右の読み込みゲージ演出 → 貯まったら確認画面へ
-            const toBtn = document.getElementById('btn-to-confirm');
-            const gauge = toBtn ? toBtn.querySelector('.btn-gauge') : null;
-            if (toBtn) toBtn.disabled = true;
-            if (gauge) { gauge.classList.remove('fill'); void gauge.offsetWidth; gauge.classList.add('fill'); }
+            const inputPanel = document.getElementById('panel-input');
+            const confirmPanel = document.getElementById('panel-confirm');
 
+            inputPanel.style.opacity = '0';
+            if (activeEvent && activeEvent.animation === "slide") {
+                inputPanel.style.transform = "translateX(-30px)";
+            }
             setTimeout(function() {
-                const inputPanel = document.getElementById('panel-input');
-                const confirmPanel = document.getElementById('panel-confirm');
-
-                inputPanel.style.opacity = '0';
+                inputPanel.classList.add('hidden');
+                confirmPanel.classList.remove('hidden');
+                confirmPanel.style.opacity = '0';
                 if (activeEvent && activeEvent.animation === "slide") {
-                    inputPanel.style.transform = "translateX(-30px)";
+                    confirmPanel.style.transform = "translateX(30px)";
                 }
                 setTimeout(function() {
-                    inputPanel.classList.add('hidden');
-                    confirmPanel.classList.remove('hidden');
-                    confirmPanel.style.opacity = '0';
-                    if (activeEvent && activeEvent.animation === "slide") {
-                        confirmPanel.style.transform = "translateX(30px)";
-                    }
-                    setTimeout(function() {
-                        confirmPanel.style.opacity = '1';
-                        confirmPanel.style.transform = "translateX(0)";
-                    }, 20);
-                    document.getElementById('form-panel-view').scrollTop = 0;
-                    // ゲージをリセット（次回用）
-                    if (gauge) gauge.classList.remove('fill');
-                    if (toBtn) toBtn.disabled = false;
-                }, 150);
-            }, 950);
+                    confirmPanel.style.opacity = '1';
+                    confirmPanel.style.transform = "translateX(0)";
+                }, 20);
+                document.getElementById('form-panel-view').scrollTop = 0;
+            }, 150);
         }
         function backToInput() {
             const inputPanel = document.getElementById('panel-input');
@@ -505,7 +503,10 @@
             }, 150);
         }
         function submitDataToGAS() {
-            const btn = document.getElementById('btn-final'); btn.disabled = true; btn.textContent = "送信中...";
+            const btn = document.getElementById('btn-final'); btn.disabled = true;
+            const btnText = btn.querySelector('.btn-text'); if (btnText) btnText.textContent = "送信中...";
+            const btnGauge = btn.querySelector('.btn-gauge');
+            if (btnGauge) { btnGauge.classList.remove('fill'); void btnGauge.offsetWidth; btnGauge.classList.add('fill'); } // 左→右に充填
             if (activeEvent && activeEvent.animation === "neon") {
                 btn.style.boxShadow = "0 0 30px #0ed59e, inset 0 0 15px #ffffff";
                 btn.style.filter = "brightness(1.5)";
@@ -522,7 +523,8 @@
                 if (data.error) {
                     alert("送信エラー: " + data.error);
                     btn.disabled = false;
-                    btn.textContent = "申し込みを確定する";
+                    if (btnText) btnText.textContent = "申し込みを確定する";
+                    if (btnGauge) btnGauge.classList.remove('fill');
                 } else {
                     document.getElementById('panel-confirm').classList.add('hidden');
                     document.getElementById('panel-success').classList.remove('hidden');
@@ -538,7 +540,8 @@
             .catch(err => {
                 alert("送信エラー: " + err.message);
                 btn.disabled = false;
-                btn.textContent = "申し込みを確定する";
+                if (btnText) btnText.textContent = "申し込みを確定する";
+                if (btnGauge) btnGauge.classList.remove('fill');
                 console.error(err);
             });
         }
