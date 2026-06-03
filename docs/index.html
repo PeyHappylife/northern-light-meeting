@@ -331,7 +331,7 @@
         window.onload = function() {
             try {
                 const grid = document.getElementById('ticket-grid'); let h = '';
-                for(let i=1; i<=10; i++) { h += `<label class="inline-radio-label"><input type="radio" name="t-count" value="${i}" ${i===1?'checked':''}>${i}</label>`; }
+                for(let i=1; i<=10; i++) { h += `<label class="inline-radio-label"><input type="radio" name="t-count" value="${i}">${i}</label>`; }
                 grid.innerHTML = h;
 
                 setTimeout(function() {
@@ -468,9 +468,11 @@
         }
         function goToConfirm(e) {
             e.preventDefault(); if(document.getElementById('ins-email').value !== document.getElementById('ins-email-chk').value) { alert("メールアドレスが一致しません。"); return; }
+            const ticketEl = document.querySelector('input[name="t-count"]:checked');
+            if (!ticketEl) { alert("枚数を選択してください。"); return; }
             const form = document.getElementById('reg-form');
             const showNote = !(activeEvent && activeEvent.showNote === false);
-            currentPayload = { sheetName: form.dataset.sheetName, name: document.getElementById('ins-name').value, kana: document.getElementById('ins-kana').value, email: document.getElementById('ins-email').value, phone: document.getElementById('ins-phone').value, note: showNote ? (document.getElementById('ins-note').value || 'なし') : '', tickets: document.querySelector('input[name="t-count"]:checked').value, upline: document.getElementById('ins-upline').value };
+            currentPayload = { sheetName: form.dataset.sheetName, name: document.getElementById('ins-name').value, kana: document.getElementById('ins-kana').value, email: document.getElementById('ins-email').value, phone: document.getElementById('ins-phone').value, note: showNote ? (document.getElementById('ins-note').value || 'なし') : '', tickets: ticketEl.value, upline: document.getElementById('ins-upline').value };
             document.getElementById('c-event').textContent = form.dataset.eventLabel; document.getElementById('c-name').textContent = currentPayload.name; document.getElementById('c-kana').textContent = currentPayload.kana; document.getElementById('c-email').textContent = currentPayload.email; document.getElementById('c-phone').textContent = currentPayload.phone; document.getElementById('c-note').textContent = currentPayload.note; document.getElementById('c-tickets').textContent = currentPayload.tickets + " 枚"; document.getElementById('c-upline').textContent = currentPayload.upline;
             // 合計 = 前売り価格（イベント詳細から取得）× 枚数
             let _price = 0;
