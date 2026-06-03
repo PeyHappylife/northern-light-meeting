@@ -168,6 +168,9 @@
             100% { box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
         }
         #btn-final.gauge-glow { animation: gauge-full-glow 0.9s ease-out; }
+        /* 完了画面：タイプライター表示中の点滅カーソル */
+        .tw-typing::after { content: '|'; margin-left: 1px; color: var(--text-blue); animation: tw-blink 0.7s step-end infinite; }
+        @keyframes tw-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
         /* 申し込みページ下部ボタン：鼓動（ドクンドクン）アニメーション */
         @keyframes btn-heartbeat {
             0%   { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
@@ -356,8 +359,10 @@
                     
                     <div id="panel-success" class="hidden" style="text-align:center; padding:52px 16px;">
                         <div class="mail-send-anim" aria-hidden="true">✉️</div>
-                        <h2 style="font-size:22px; margin:0 0 18px 0;">お申し込み完了しました</h2>
-                        <p style="color:var(--text-main); font-size:14px; font-weight:bold; line-height:1.9; margin:0;">お申し込みありがとうございます。<br>申し込み内容をメールアドレスに送信したのでご確認お願いいたします。<br>当日のご来場をお待ちしております。</p>
+                        <h2 id="success-title" style="font-size:22px; margin:0 0 18px 0; min-height:1.4em;">お申し込み完了しました</h2>
+                        <p id="success-msg" style="color:var(--text-main); font-size:14px; font-weight:bold; line-height:1.9; margin:0; white-space:pre-line; min-height:5.7em;">お申し込みありがとうございます。
+申し込み内容をメールアドレスに送信したのでご確認お願いいたします。
+当日のご来場をお待ちしております。</p>
                     </div>
                 </div>
             </div>
@@ -685,6 +690,25 @@
                 if (typeof updateSteps === 'function') updateSteps();
             }, 150);
         }
+        // 完了画面のタイプライター表示
+        let _twTitle = '', _twMsg = '', _twCaptured = false;
+        function typeWriter(el, text, speed, cb) {
+            if (!el) { if (cb) cb(); return; }
+            el.textContent = '';
+            el.classList.add('tw-typing');
+            let i = 0;
+            (function tick(){
+                el.textContent = text.slice(0, i);
+                if (i < text.length) { i++; setTimeout(tick, speed); }
+                else { el.classList.remove('tw-typing'); if (cb) cb(); }
+            })();
+        }
+        function playSuccessTypewriter() {
+            const t = document.getElementById('success-title');
+            const m = document.getElementById('success-msg');
+            if (!_twCaptured) { if (t) _twTitle = t.textContent; if (m) _twMsg = m.textContent; _twCaptured = true; } // 改行は white-space:pre-line により \n で保持
+            typeWriter(t, _twTitle, 75, function(){ typeWriter(m, _twMsg, 32); });
+        }
         function submitDataToGAS() {
             const btn = document.getElementById('btn-final'); btn.disabled = true;
             const btnText = btn.querySelector('.btn-text'); if (btnText) btnText.textContent = "送信中...";
@@ -718,6 +742,7 @@
                     setTimeout(function() {
                         document.getElementById('panel-confirm').classList.add('hidden');
                         document.getElementById('panel-success').classList.remove('hidden');
+                        playSuccessTypewriter();   // 完了テキストをタイプライター表示
                         const closeWrapper = document.getElementById('modal-close-wrapper');
                         if (closeWrapper) closeWrapper.classList.add('hidden');
                         document.getElementById('form-panel-view').scrollTop = 0;
@@ -726,7 +751,7 @@
                         if (activeEvent && (activeEvent.animation === "confetti" || activeEvent.animation === "neon" || activeEvent.animation === "stardust" || activeEvent.animation === "slide" || activeEvent.animation === "theatrical" || activeEvent.animation === "transform")) {
                             startConfettiLoop();
                         }
-                    }, 350);
+                    }, 300);
                 }
             })
             .catch(err => {
