@@ -143,14 +143,13 @@
         /* 申し込みページ下部ボタン：鼓動（ドクンドクン）アニメーション */
         @keyframes btn-heartbeat {
             0%   { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
-            14%  { transform: scale(1.07); box-shadow: 0 8px 22px rgba(0, 174, 239, 0.55); }
+            14%  { transform: scale(1.05); box-shadow: 0 7px 20px rgba(0, 174, 239, 0.5); }
             28%  { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
-            42%  { transform: scale(1.07); box-shadow: 0 8px 22px rgba(0, 174, 239, 0.55); }
+            42%  { transform: scale(1.05); box-shadow: 0 7px 20px rgba(0, 174, 239, 0.5); }
             70%  { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
             100% { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
         }
-        .btn-heartbeat { animation: btn-heartbeat 1.4s ease-in-out infinite; will-change: transform; }
-        @media (prefers-reduced-motion: reduce) { .btn-heartbeat { animation: none; } }
+        .btn-heartbeat { animation: btn-heartbeat 2s ease-in-out infinite; will-change: transform; }
         /* 完了画面：メール送信アニメーション */
         .mail-send-anim { font-size: 46px; display: inline-block; margin-bottom: 14px; animation: mail-fly 1.8s ease-in-out infinite; }
         @keyframes mail-fly {
