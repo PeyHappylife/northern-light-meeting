@@ -140,6 +140,17 @@
         .submit-btn .btn-gauge { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,0.45); z-index: 0; }
         .submit-btn .btn-gauge.fill { width: 100%; transition: width 0.9s linear; }
         #btn-final .btn-gauge.fill { transition: width 2s ease-out; }
+        /* 申し込みページ下部ボタン：鼓動（ドクンドクン）アニメーション */
+        @keyframes btn-heartbeat {
+            0%   { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
+            14%  { transform: scale(1.07); box-shadow: 0 8px 22px rgba(0, 174, 239, 0.55); }
+            28%  { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
+            42%  { transform: scale(1.07); box-shadow: 0 8px 22px rgba(0, 174, 239, 0.55); }
+            70%  { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
+            100% { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
+        }
+        .btn-heartbeat { animation: btn-heartbeat 1.4s ease-in-out infinite; will-change: transform; }
+        @media (prefers-reduced-motion: reduce) { .btn-heartbeat { animation: none; } }
         /* 完了画面：メール送信アニメーション */
         .mail-send-anim { font-size: 46px; display: inline-block; margin-bottom: 14px; animation: mail-fly 1.8s ease-in-out infinite; }
         @keyframes mail-fly {
@@ -274,7 +285,7 @@
                 <div id="disp-guest" class="event-guest"></div>
                 <div id="disp-details" class="event-description hidden"></div>
                 
-                <button onclick="openFormModal()" class="submit-btn" style="max-width: 360px; margin: 26px auto 0 auto; display: block;">お申し込み手続きへ進む →</button>
+                <button onclick="openFormModal()" class="submit-btn btn-heartbeat" style="max-width: 360px; margin: 26px auto 0 auto; display: block;">お申し込み手続きへ進む →</button>
             </div>
             
             <!-- フローティングモーダルコンテナ -->
