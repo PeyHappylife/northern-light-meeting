@@ -47,6 +47,7 @@
         .event-radio-label { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 12px; background: var(--card-bg); border: 2px solid var(--input-border); border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s ease; user-select: none; -webkit-user-select: none; }
         .event-radio-label input[type="radio"] { margin-right: 12px; width: 20px; height: 20px; accent-color: #0284c7; flex-shrink: 0; }
         .event-radio-label.selected { border-color: #38bdf8; background: #f0f9ff; color: #0369a1; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
+        .evlabel { text-align: center; line-height: 1.5; }
         
         .main-layout { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 5px; width: 100%; transition: opacity 0.4s ease; }
         .details-panel { text-align: center; padding: 10px 4px; width: 100%; }
@@ -410,11 +411,17 @@
             }
         }
         function formatEventLabel(ev) {
+            let dateStr, name;
             if (ev.date && ev.eventName) {
-                const dateWithBackslash = ev.date.replace('/', '\\');
-                return dateWithBackslash + ' ' + ev.eventName;
+                dateStr = ev.date.replace('/', '\\');
+                name = ev.eventName;
+            } else {
+                const idx = (ev.radioLabel || '').indexOf(' ');
+                dateStr = idx > 0 ? ev.radioLabel.slice(0, idx) : (ev.radioLabel || '');
+                name = idx > 0 ? ev.radioLabel.slice(idx + 1) : '';
             }
-            return ev.radioLabel;
+            // 日付とタイトルの間で改行
+            return '<span class="evlabel">' + dateStr + '<br>' + name + '</span>';
         }
         function onRadioChange(id) {
             document.querySelectorAll('.event-radio-label').forEach(l => l.classList.remove('selected')); document.getElementById(`lbl-${id}`).classList.add('selected');
