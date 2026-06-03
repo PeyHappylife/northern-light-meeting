@@ -125,7 +125,10 @@
         
         .form-note { font-size: 12px; font-weight: bold; line-height: 1.6; margin-top: 6px; text-align: center; }
         .form-note.red { color: var(--accent-red); }
-        .submit-btn { width: 100%; background: linear-gradient(to right, #00aeef, #00b5f1); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); margin-top: 10px; transition: opacity 0.2s; -webkit-tap-highlight-color: transparent; }
+        .submit-btn { width: 100%; background: linear-gradient(to right, #00aeef, #00b5f1); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); margin-top: 10px; transition: opacity 0.2s; -webkit-tap-highlight-color: transparent; position: relative; overflow: hidden; }
+        .submit-btn .btn-text { position: relative; z-index: 1; }
+        .submit-btn .btn-gauge { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,0.45); z-index: 0; }
+        .submit-btn .btn-gauge.fill { width: 100%; transition: width 0.9s linear; }
         .btn-secondary { background: #e2e8f0; color: #475569; margin-top: 12px; box-shadow: none; }
         
         /* 確認画面項目の中央揃え設定 */
@@ -276,7 +279,7 @@
                             <div class="form-group" id="note-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
                             <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div></div>
                             <div class="form-group"><label>アップライン<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
-                            <button type="submit" class="submit-btn">確認画面へ →</button>
+                            <button type="submit" class="submit-btn" id="btn-to-confirm"><span class="btn-gauge"></span><span class="btn-text">確認画面へ →</span></button>
                         </form>
                     </div>
                     
@@ -296,7 +299,7 @@
                         <button onclick="backToInput()" class="submit-btn btn-secondary">修正する</button>
                     </div>
                     
-                    <div id="panel-success" class="hidden" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; min-height:55vh; padding:30px 10px;">
+                    <div id="panel-success" class="hidden" style="text-align:center; padding:52px 16px;">
                         <div style="font-size:54px; color:var(--accent-green); margin-bottom:16px; transform: scale(0); animation: pop-check 0.4s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">✓</div>
                         <h2 style="font-size:22px; margin:0 0 18px 0;">お申し込み完了しました</h2>
                         <p style="color:var(--text-main); font-size:14px; font-weight:bold; line-height:1.9; margin:0;">お申し込みありがとうございます。<br>申し込み内容をメールアドレスに送信したのでご確認お願いいたします。<br>当日のご来場をお待ちしております。</p>
@@ -456,27 +459,38 @@
             currentPayload.total = (_price && _tnum) ? (_price * _tnum).toLocaleString('en-US') + '円' : '';
             document.getElementById('c-total').textContent = currentPayload.total || '—';
             document.getElementById('confirm-note-item').classList.toggle('hidden', !showNote);
-            
-            const inputPanel = document.getElementById('panel-input');
-            const confirmPanel = document.getElementById('panel-confirm');
-            
-            inputPanel.style.opacity = '0';
-            if (activeEvent && activeEvent.animation === "slide") {
-                inputPanel.style.transform = "translateX(-30px)";
-            }
+
+            // ボタンに左→右の読み込みゲージ演出 → 貯まったら確認画面へ
+            const toBtn = document.getElementById('btn-to-confirm');
+            const gauge = toBtn ? toBtn.querySelector('.btn-gauge') : null;
+            if (toBtn) toBtn.disabled = true;
+            if (gauge) { gauge.classList.remove('fill'); void gauge.offsetWidth; gauge.classList.add('fill'); }
+
             setTimeout(function() {
-                inputPanel.classList.add('hidden');
-                confirmPanel.classList.remove('hidden');
-                confirmPanel.style.opacity = '0';
+                const inputPanel = document.getElementById('panel-input');
+                const confirmPanel = document.getElementById('panel-confirm');
+
+                inputPanel.style.opacity = '0';
                 if (activeEvent && activeEvent.animation === "slide") {
-                    confirmPanel.style.transform = "translateX(30px)";
+                    inputPanel.style.transform = "translateX(-30px)";
                 }
-                setTimeout(function() { 
-                    confirmPanel.style.opacity = '1'; 
-                    confirmPanel.style.transform = "translateX(0)";
-                }, 20);
-                document.getElementById('form-panel-view').scrollTop = 0;
-            }, 150);
+                setTimeout(function() {
+                    inputPanel.classList.add('hidden');
+                    confirmPanel.classList.remove('hidden');
+                    confirmPanel.style.opacity = '0';
+                    if (activeEvent && activeEvent.animation === "slide") {
+                        confirmPanel.style.transform = "translateX(30px)";
+                    }
+                    setTimeout(function() {
+                        confirmPanel.style.opacity = '1';
+                        confirmPanel.style.transform = "translateX(0)";
+                    }, 20);
+                    document.getElementById('form-panel-view').scrollTop = 0;
+                    // ゲージをリセット（次回用）
+                    if (gauge) gauge.classList.remove('fill');
+                    if (toBtn) toBtn.disabled = false;
+                }, 150);
+            }, 950);
         }
         function backToInput() {
             const inputPanel = document.getElementById('panel-input');
