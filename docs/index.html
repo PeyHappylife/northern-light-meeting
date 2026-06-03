@@ -158,6 +158,16 @@
         .submit-btn .btn-gauge { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,0.45); z-index: 0; }
         .submit-btn .btn-gauge.fill { width: 100%; transition: width 0.9s linear; }
         #btn-final .btn-gauge.fill { transition: width 2s ease-out; }
+        /* 送信ゲージ：読み込み中はゆっくり90%まで前進、応答が返ったら一気に100%（=読み込み速度に追従） */
+        #btn-final .btn-gauge.loading { width: 90%; transition: width 6s cubic-bezier(0.05, 0.7, 0.1, 1); }
+        #btn-final .btn-gauge.done { width: 100%; transition: width 0.3s ease-out; background: rgba(255,255,255,0.6); }
+        /* ゲージ満タン時の発光エフェクト */
+        @keyframes gauge-full-glow {
+            0%   { box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
+            35%  { box-shadow: 0 0 28px 8px rgba(14,213,158,0.95), 0 0 56px 16px rgba(6,182,212,0.6); }
+            100% { box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
+        }
+        #btn-final.gauge-glow { animation: gauge-full-glow 0.9s ease-out; }
         /* 申し込みページ下部ボタン：鼓動（ドクンドクン）アニメーション */
         @keyframes btn-heartbeat {
             0%   { transform: scale(1);    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.25); }
@@ -679,7 +689,8 @@
             const btn = document.getElementById('btn-final'); btn.disabled = true;
             const btnText = btn.querySelector('.btn-text'); if (btnText) btnText.textContent = "送信中...";
             const btnGauge = btn.querySelector('.btn-gauge');
-            if (btnGauge) { btnGauge.classList.remove('fill'); void btnGauge.offsetWidth; btnGauge.classList.add('fill'); } // 左→右に充填
+            if (btnGauge) { btnGauge.classList.remove('fill','loading','done'); void btnGauge.offsetWidth; btnGauge.classList.add('loading'); } // 読み込み速度に追従してゆっくり充填
+            btn.classList.remove('gauge-glow');
             if (activeEvent && activeEvent.animation === "neon") {
                 btn.style.boxShadow = "0 0 30px #0ed59e, inset 0 0 15px #ffffff";
                 btn.style.filter = "brightness(1.5)";
@@ -697,18 +708,25 @@
                     alert("送信エラー: " + data.error);
                     btn.disabled = false;
                     if (btnText) btnText.textContent = "申し込みを確定する";
-                    if (btnGauge) btnGauge.classList.remove('fill');
+                    if (btnGauge) btnGauge.classList.remove('fill','loading','done');
+                    btn.classList.remove('gauge-glow');
                 } else {
-                    document.getElementById('panel-confirm').classList.add('hidden');
-                    document.getElementById('panel-success').classList.remove('hidden');
-                    const closeWrapper = document.getElementById('modal-close-wrapper');
-                    if (closeWrapper) closeWrapper.classList.add('hidden');
-                    document.getElementById('form-panel-view').scrollTop = 0;
-                    window.scrollTo(0, 0);
+                    // 応答が返った瞬間にゲージを一気に100%まで満たし、発光エフェクトを発火
+                    if (btnGauge) { btnGauge.classList.remove('loading'); btnGauge.classList.add('done'); }
+                    btn.classList.remove('gauge-glow'); void btn.offsetWidth; btn.classList.add('gauge-glow');
+                    // 満タン＋発光を見せてから成功画面へ
+                    setTimeout(function() {
+                        document.getElementById('panel-confirm').classList.add('hidden');
+                        document.getElementById('panel-success').classList.remove('hidden');
+                        const closeWrapper = document.getElementById('modal-close-wrapper');
+                        if (closeWrapper) closeWrapper.classList.add('hidden');
+                        document.getElementById('form-panel-view').scrollTop = 0;
+                        window.scrollTo(0, 0);
 
-                    if (activeEvent && (activeEvent.animation === "confetti" || activeEvent.animation === "neon" || activeEvent.animation === "stardust" || activeEvent.animation === "slide" || activeEvent.animation === "theatrical" || activeEvent.animation === "transform")) {
-                        startConfettiLoop();
-                    }
+                        if (activeEvent && (activeEvent.animation === "confetti" || activeEvent.animation === "neon" || activeEvent.animation === "stardust" || activeEvent.animation === "slide" || activeEvent.animation === "theatrical" || activeEvent.animation === "transform")) {
+                            startConfettiLoop();
+                        }
+                    }, 650);
                 }
             })
             .catch(err => {
