@@ -390,11 +390,12 @@
         
         function openFormModal() {
             const overlay = document.getElementById('form-modal');
-            overlay.className = "modal-overlay"; 
+            overlay.className = "modal-overlay";
             const anim = activeEvent && activeEvent.animation ? activeEvent.animation : "neon";
             overlay.classList.add("anim-" + anim);
             setTimeout(() => { overlay.classList.add('active'); }, 10);
             document.body.style.overflow = 'hidden';
+            window.scrollTo(0, 0);
             if (typeof updateSteps === 'function') updateSteps();  // 1項目ずつ表示を初期化
         }
         function closeFormModal() {
@@ -421,6 +422,7 @@
                 setTimeout(function() {
                     gate.classList.add('hidden');
                     content.classList.remove('hidden');
+                    window.scrollTo(0, 0);
                 }, 400);
 
                 if(!events || events.length === 0) { group.innerHTML = '<p style="color:var(--accent-red); font-size:14px; font-weight:bold;">現在、募集中のイベントはありません。</p>'; return; }
@@ -451,7 +453,7 @@
         function onRadioChange(id) {
             document.querySelectorAll('.event-radio-label').forEach(l => l.classList.remove('selected')); document.getElementById(`lbl-${id}`).classList.add('selected');
             const ev = globalEvents.find(e => e.id === id);
-            if(ev) { selectEvent(ev); document.getElementById('placeholder-view').classList.add('hidden'); document.getElementById('details-view').classList.remove('hidden'); }
+            if(ev) { selectEvent(ev); document.getElementById('placeholder-view').classList.add('hidden'); document.getElementById('details-view').classList.remove('hidden'); window.scrollTo(0, 0); }
         }
         function selectEvent(ev) {
             activeEvent = ev;
@@ -596,6 +598,7 @@
                     confirmPanel.style.transform = "translateX(0)";
                 }, 20);
                 document.getElementById('form-panel-view').scrollTop = 0;
+                window.scrollTo(0, 0);
             }, 150);
         }
         function backToInput() {
@@ -608,6 +611,7 @@
                 inputPanel.style.opacity = '0';
                 setTimeout(function() { inputPanel.style.opacity = '1'; }, 20);
                 document.getElementById('form-panel-view').scrollTop = 0;
+                window.scrollTo(0, 0);
                 if (typeof updateSteps === 'function') updateSteps();
             }, 150);
         }
@@ -640,6 +644,7 @@
                     const closeWrapper = document.getElementById('modal-close-wrapper');
                     if (closeWrapper) closeWrapper.classList.add('hidden');
                     document.getElementById('form-panel-view').scrollTop = 0;
+                    window.scrollTo(0, 0);
 
                     if (activeEvent && (activeEvent.animation === "confetti" || activeEvent.animation === "neon" || activeEvent.animation === "stardust" || activeEvent.animation === "slide" || activeEvent.animation === "theatrical" || activeEvent.animation === "transform")) {
                         startConfettiLoop();
