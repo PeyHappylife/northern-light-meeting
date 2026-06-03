@@ -273,7 +273,8 @@
                             <div class="form-group lg"><label>フリガナ<span class="required-badge">＊</span></label><input type="text" id="ins-kana" placeholder="例：やまだ たろう" required></div>
                             <div class="form-group lg"><label>メールアドレス<span class="required-badge">＊</span></label><input type="email" id="ins-email" placeholder="info@example.com" style="margin-bottom:8px;" required><input type="email" id="ins-email-chk" placeholder="確認用" required></div>
                             <div class="form-group lg"><label>電話番号<span class="required-badge">＊</span></label><input type="tel" id="ins-phone" placeholder="090-1234-5678" required></div>
-                            <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div></div>
+                            <div class="form-group" id="note-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
+                            <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div></div>
                             <div class="form-group"><label>アップダイヤ<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
                             <button type="submit" class="submit-btn">確認画面へ →</button>
                         </form>
@@ -287,6 +288,7 @@
                         <div class="confirm-item"><div class="confirm-lbl">フリガナ</div><div class="confirm-val" id="c-kana"></div></div>
                         <div class="confirm-item"><div class="confirm-lbl">メールアドレス</div><div class="confirm-val" id="c-email"></div></div>
                         <div class="confirm-item"><div class="confirm-lbl">電話番号</div><div class="confirm-val" id="c-phone"></div></div>
+                        <div class="confirm-item" id="confirm-note-item"><div class="confirm-lbl">一般予定人数</div><div class="confirm-val" id="c-note"></div></div>
                         <div class="confirm-item"><div class="confirm-lbl">枚数</div><div class="confirm-val" id="c-tickets"></div></div>
                         <div class="confirm-item"><div class="confirm-lbl">アップダイヤ</div><div class="confirm-val" id="c-upline"></div></div>
                         <button onclick="submitDataToGAS()" id="btn-final" class="submit-btn" style="background: linear-gradient(to right, #0ed59e, #06b6d4);">申し込みを確定する</button>
@@ -434,12 +436,19 @@
             if(ev.details && ev.details.trim() !== "") { detailsBox.textContent = ev.details; detailsBox.classList.remove('hidden'); } else { detailsBox.classList.add('hidden'); }
             document.getElementById('reg-form').dataset.sheetName = ev.sheetName;
             document.getElementById('reg-form').dataset.eventLabel = ev.radioLabel;
+            // 「初めて参加される一般の方」欄＋赤注記の表示/非表示（管理画面の有無設定。未設定は表示）
+            const showNote = !(ev.showNote === false || ev.showNote === '無' || ev.showNote === '0' || ev.showNote === 0);
+            ev.showNote = showNote;
+            document.getElementById('note-group').classList.toggle('hidden', !showNote);
+            document.getElementById('note-firsttime').classList.toggle('hidden', !showNote);
         }
         function goToConfirm(e) {
             e.preventDefault(); if(document.getElementById('ins-email').value !== document.getElementById('ins-email-chk').value) { alert("メールアドレスが一致しません。"); return; }
             const form = document.getElementById('reg-form');
-            currentPayload = { sheetName: form.dataset.sheetName, name: document.getElementById('ins-name').value, kana: document.getElementById('ins-kana').value, email: document.getElementById('ins-email').value, phone: document.getElementById('ins-phone').value, note: '', tickets: document.querySelector('input[name="t-count"]:checked').value, upline: document.getElementById('ins-upline').value };
-            document.getElementById('c-event').textContent = form.dataset.eventLabel; document.getElementById('c-name').textContent = currentPayload.name; document.getElementById('c-kana').textContent = currentPayload.kana; document.getElementById('c-email').textContent = currentPayload.email; document.getElementById('c-phone').textContent = currentPayload.phone; document.getElementById('c-tickets').textContent = currentPayload.tickets + " 枚"; document.getElementById('c-upline').textContent = currentPayload.upline;
+            const showNote = !(activeEvent && activeEvent.showNote === false);
+            currentPayload = { sheetName: form.dataset.sheetName, name: document.getElementById('ins-name').value, kana: document.getElementById('ins-kana').value, email: document.getElementById('ins-email').value, phone: document.getElementById('ins-phone').value, note: showNote ? (document.getElementById('ins-note').value || 'なし') : '', tickets: document.querySelector('input[name="t-count"]:checked').value, upline: document.getElementById('ins-upline').value };
+            document.getElementById('c-event').textContent = form.dataset.eventLabel; document.getElementById('c-name').textContent = currentPayload.name; document.getElementById('c-kana').textContent = currentPayload.kana; document.getElementById('c-email').textContent = currentPayload.email; document.getElementById('c-phone').textContent = currentPayload.phone; document.getElementById('c-note').textContent = currentPayload.note; document.getElementById('c-tickets').textContent = currentPayload.tickets + " 枚"; document.getElementById('c-upline').textContent = currentPayload.upline;
+            document.getElementById('confirm-note-item').classList.toggle('hidden', !showNote);
             
             const inputPanel = document.getElementById('panel-input');
             const confirmPanel = document.getElementById('panel-confirm');
