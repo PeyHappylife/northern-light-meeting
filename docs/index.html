@@ -168,6 +168,16 @@
             100% { box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
         }
         #btn-final.gauge-glow { animation: gauge-full-glow 0.9s ease-out; }
+        /* 全項目入力完了で「確認画面へ」ボタンが鼓動（モーダル内なので専用クラス＝modal-open停止の影響を受けない） */
+        @keyframes confirm-heartbeat {
+            0%   { transform: scale(1);    box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
+            14%  { transform: scale(1.05); box-shadow: 0 7px 20px rgba(0,174,239,0.5); }
+            28%  { transform: scale(1);    box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
+            42%  { transform: scale(1.05); box-shadow: 0 7px 20px rgba(0,174,239,0.5); }
+            70%  { transform: scale(1);    box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
+            100% { transform: scale(1);    box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
+        }
+        .btn-confirm-ready { animation: confirm-heartbeat 2s ease-in-out infinite !important; }
         /* 完了画面：タイプライター表示中の点滅カーソル */
         .tw-typing::after { content: '|'; margin-left: 1px; color: var(--text-blue); animation: tw-blink 0.7s step-end infinite; }
         @keyframes tw-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
@@ -618,6 +628,7 @@
                 if (!noteHidden && !stepComplete(g)) chainOk = false;
             });
             if (btn) btn.classList.toggle('step-visible', chainOk); // 全完了で確認ボタン表示
+            if (btn) btn.classList.toggle('btn-confirm-ready', chainOk); // 全項目入力で鼓動
         }
 
         // 判定して表示/非表示。有効なら true
