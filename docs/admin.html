@@ -165,9 +165,13 @@
         };
 
         function loadAllServerData() {
-            // 開催場所・ゲスト名・イベント名は getEventsList から抽出（新旧GAS両対応で正しい値を取得）
-            fetch(GAS_API_URL + '?action=getEventsList')
-                .then(r => r.json()).then(events => renderUniqueFromEvents(events)).catch(console.error);
+            // 過去分も含む全イベントから重複なしで取得（GASが正しい列を走査）
+            fetch(GAS_API_URL + '?action=getUniqueEventNames')
+                .then(r => r.json()).then(names => renderSelect('event-name-sel', names)).catch(console.error);
+            fetch(GAS_API_URL + '?action=getUniqueGuests')
+                .then(r => r.json()).then(guests => renderSelect('event-guest-sel', guests)).catch(console.error);
+            fetch(GAS_API_URL + '?action=getUniqueVenues')
+                .then(r => r.json()).then(venues => renderSelect('event-venue-sel', venues)).catch(console.error);
             fetch(GAS_API_URL + '?action=getUniqueDetails')
                 .then(r => r.json()).then(details => renderDetailSelect(details)).catch(console.error);
             fetch(GAS_API_URL + '?action=getAllEventsListForAdmin')
@@ -211,31 +215,6 @@
                 .then(r => r.json())
                 .then(data => { if (data.error) alert('エラー: ' + data.error); })
                 .catch(console.error);
-        }
-
-        // getEventsList から 開催場所/ゲスト名/イベント名 のユニーク値を抽出（旧GASの二重データも補正）
-        function renderUniqueFromEvents(events) {
-            if (!Array.isArray(events)) events = [];
-            const venues = [], guests = [], names = [];
-            events.forEach(function(ev) {
-                const raw = ev.time || '';
-                const parts = raw.split(' / START ');
-                let venue, guest;
-                if (parts.length >= 3) {            // 旧GAS(二重): venue=time末尾, guest=ev.venue
-                    venue = parts.slice(2).join(' / START ').trim();
-                    guest = (ev.venue || '').trim();
-                } else {                            // 新GAS(正常): venue=ev.venue, guest=ev.guest
-                    venue = (ev.venue || '').trim();
-                    guest = (ev.guest || '').trim();
-                }
-                const name = (ev.eventName || '').trim();
-                if (venue && venues.indexOf(venue) === -1) venues.push(venue);
-                if (guest && guests.indexOf(guest) === -1) guests.push(guest);
-                if (name && names.indexOf(name) === -1) names.push(name);
-            });
-            renderSelect('event-venue-sel', venues);
-            renderSelect('event-guest-sel', guests);
-            renderSelect('event-name-sel', names);
         }
 
         function renderSelect(selId, items) {
