@@ -11,14 +11,19 @@
         h2 { font-size: 21px; margin: 0 0 25px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; color: #1e293b; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #475569; }
-        .form-group input[type="text"], .form-group input[type="date"], .form-group input[type="time"], .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; box-sizing: border-box; outline: none; background-color: #f8fafc; font-family: inherit; }
+        .form-group input[type="text"], .form-group input[type="date"], .form-group input[type="time"], .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; box-sizing: border-box; outline: none; background-color: #f8fafc; font-family: inherit; text-align: center; text-align-last: center; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #38bdf8; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(56,189,248,0.15); }
-        .form-group textarea { text-align: left; }
+        .form-group textarea { text-align: left; text-align-last: left; }
         .time-range { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .submit-btn { width: 100%; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(2,132,199,0.2); margin-top: 10px; transition: all 0.2s; }
         .submit-btn:disabled { background: #94a3b8 !important; cursor: not-allowed; box-shadow: none; }
         .loading { display: none; text-align: center; font-size: 14px; color: var(--primary-color); font-weight: bold; margin-top: 15px; }
         .hidden { display: none !important; }
+
+        /* 起動中バナー（コールドスタート対策のUX） */
+        .boot-banner { display: none; align-items: center; justify-content: center; gap: 10px; background: #ecfeff; border: 1px solid #a5f3fc; color: #0369a1; font-size: 13px; font-weight: bold; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(2,132,199,0.06); }
+        .boot-spinner { width: 16px; height: 16px; border: 2px solid #bae6fd; border-top-color: #0284c7; border-radius: 50%; animation: boot-spin 0.8s linear infinite; flex-shrink: 0; }
+        @keyframes boot-spin { to { transform: rotate(360deg); } }
 
         /* アニメーション選択ボタン */
         .anim-submit-section { margin-top: 25px; border-top: 1px dashed var(--border-color); padding-top: 20px; }
@@ -59,6 +64,12 @@
     </style>
 </head><body>
     <div class="admin-container" id="admin-main">
+
+        <!-- 起動中バナー -->
+        <div id="boot-banner" class="boot-banner">
+            <div class="boot-spinner"></div>
+            <span id="boot-banner-text">サーバー起動中… 最大30秒ほどお待ちください</span>
+        </div>
 
         <!-- セクション1: 新規作成 -->
         <div id="create-section" class="admin-card">
@@ -164,20 +175,52 @@
             loadAllServerData();
         };
 
+        // 初期データ取得を1回のfetchに統合（往復6回→1回・コールドスタートの待ちを大幅短縮）
         function loadAllServerData() {
-            // 過去分も含む全イベントから重複なしで取得（GASが正しい列を走査）
-            fetch(GAS_API_URL + '?action=getUniqueEventNames')
-                .then(r => r.json()).then(names => renderSelect('event-name-sel', names)).catch(console.error);
-            fetch(GAS_API_URL + '?action=getUniqueGuests')
-                .then(r => r.json()).then(guests => renderSelect('event-guest-sel', guests)).catch(console.error);
-            fetch(GAS_API_URL + '?action=getUniqueVenues')
-                .then(r => r.json()).then(venues => renderSelect('event-venue-sel', venues)).catch(console.error);
-            fetch(GAS_API_URL + '?action=getUniqueDetails')
-                .then(r => r.json()).then(details => renderDetailSelect(details)).catch(console.error);
-            fetch(GAS_API_URL + '?action=getAllEventsListForAdmin')
-                .then(r => r.json()).then(events => renderDeleteSelect(events)).catch(console.error);
-            fetch(GAS_API_URL + '?action=getMailTimes')
-                .then(r => r.json()).then(times => renderMailTimeGrid(times)).catch(console.error);
+            showBootBanner();
+            fetch(GAS_API_URL + '?action=getAdminBootstrap')
+                .then(r => r.json())
+                .then(data => {
+                    if (!data || data.error) throw new Error(data && data.error || 'no data');
+                    hideBootBanner();
+                    // 画面の上から順に少しずつ反映（上→下に流れるように見せる）
+                    const steps = [
+                        () => renderSelect('event-name-sel', data.eventNames),   // イベント名
+                        () => renderSelect('event-venue-sel', data.venues),      // 開催場所
+                        () => renderSelect('event-guest-sel', data.guests),      // ゲスト名
+                        () => renderDetailSelect(data.details),                  // 詳細テンプレート
+                        () => renderMailTimeGrid(data.mailTimes),                // メール送信時刻
+                        () => renderDeleteSelect(data.events)                    // 削除用一覧（最下部）
+                    ];
+                    steps.forEach((fn, i) => setTimeout(fn, i * 90));
+                })
+                .catch(err => {
+                    // getAdminBootstrap が未デプロイ等の場合は旧方式（6本）にフォールバック
+                    console.error('bootstrap失敗→個別取得にフォールバック', err);
+                    loadAllServerDataLegacy();
+                });
+        }
+
+        // 旧方式（フォールバック用）: 6本の個別fetch
+        function loadAllServerDataLegacy() {
+            const calls = [
+                fetch(GAS_API_URL + '?action=getUniqueEventNames').then(r => r.json()).then(names => renderSelect('event-name-sel', names)),
+                fetch(GAS_API_URL + '?action=getUniqueGuests').then(r => r.json()).then(guests => renderSelect('event-guest-sel', guests)),
+                fetch(GAS_API_URL + '?action=getUniqueVenues').then(r => r.json()).then(venues => renderSelect('event-venue-sel', venues)),
+                fetch(GAS_API_URL + '?action=getUniqueDetails').then(r => r.json()).then(details => renderDetailSelect(details)),
+                fetch(GAS_API_URL + '?action=getAllEventsListForAdmin').then(r => r.json()).then(events => renderDeleteSelect(events)),
+                fetch(GAS_API_URL + '?action=getMailTimes').then(r => r.json()).then(times => renderMailTimeGrid(times))
+            ];
+            Promise.allSettled(calls).finally(hideBootBanner);
+        }
+
+        function showBootBanner() {
+            const b = document.getElementById('boot-banner');
+            if (b) b.style.display = 'flex';
+        }
+        function hideBootBanner() {
+            const b = document.getElementById('boot-banner');
+            if (b) b.style.display = 'none';
         }
 
         // ── メール送信時刻 UI ──────────────────────────────
