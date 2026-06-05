@@ -610,12 +610,12 @@
                 selectEvent(ev);
                 document.getElementById('placeholder-view').classList.add('hidden');
                 document.getElementById('details-view').classList.remove('hidden');
-                // 日付選択部が画面から消えるまで上にスクロール（詳細を画面トップに寄せる）
+                // 日付選択部が画面から消えるまで、3秒かけてゆっくり上へスクロール（詳細を画面トップへ）
                 setTimeout(function() {
                     const dv = document.getElementById('details-view');
                     if (!dv) return;
                     const top = dv.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop || 0);
-                    window.scrollTo({ top: Math.max(0, top - 8), behavior: 'smooth' });
+                    slowScrollWindowTo(Math.max(0, top - 8), 3000);
                 }, 60);
             }
         }
@@ -752,6 +752,19 @@
             e.style.display = 'none'; return true;
         }
 
+        // ウィンドウを目標位置まで一定速度でゆっくりスクロール
+        function slowScrollWindowTo(targetY, duration) {
+            const el = document.scrollingElement || document.documentElement;
+            const start = el.scrollTop;
+            const dist = targetY - start;
+            if (Math.abs(dist) < 2) return;
+            const t0 = performance.now();
+            (function step(now) {
+                const p = Math.min(1, (now - t0) / duration); // 一定速度
+                el.scrollTop = start + dist * p;
+                if (p < 1) requestAnimationFrame(step);
+            })(t0);
+        }
         // 確認画面：3秒かけて一定速度でいちばん下までスクロール
         function slowScrollToBottom(duration) {
             const panel = document.getElementById('form-panel-view');
