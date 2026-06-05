@@ -428,6 +428,16 @@
                     _phoneEl.addEventListener('focus', function() { setTimeout(syncModalToViewport, 350); });
                     _phoneEl.addEventListener('input', function() { setTimeout(syncModalToViewport, 60); });
                 }
+                // アップライン欄：カーソルが入ったらキーボードで隠れない位置までスクロール
+                const _uplineEl = document.getElementById('ins-upline');
+                if (_uplineEl) {
+                    _uplineEl.addEventListener('focus', function() {
+                        setTimeout(function() {
+                            syncModalToViewport();
+                            _uplineEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                        }, 350);
+                    });
+                }
                 updateSteps();
 
                 setTimeout(function() {
