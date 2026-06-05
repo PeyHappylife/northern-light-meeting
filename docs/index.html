@@ -574,7 +574,18 @@
         function onRadioChange(id) {
             document.querySelectorAll('.event-radio-label').forEach(l => l.classList.remove('selected')); document.getElementById(`lbl-${id}`).classList.add('selected');
             const ev = globalEvents.find(e => e.id === id);
-            if(ev) { selectEvent(ev); document.getElementById('placeholder-view').classList.add('hidden'); document.getElementById('details-view').classList.remove('hidden'); window.scrollTo(0, 0); }
+            if(ev) {
+                selectEvent(ev);
+                document.getElementById('placeholder-view').classList.add('hidden');
+                document.getElementById('details-view').classList.remove('hidden');
+                // 日付選択部が画面から消えるまで上にスクロール（詳細を画面トップに寄せる）
+                setTimeout(function() {
+                    const dv = document.getElementById('details-view');
+                    if (!dv) return;
+                    const top = dv.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop || 0);
+                    window.scrollTo({ top: Math.max(0, top - 8), behavior: 'smooth' });
+                }, 60);
+            }
         }
         // アニメーション表記を英語キーに正規化（日本語ラベル・絵文字付きでも判定OK / 旧データの英語キーもそのまま通る）
         function normalizeAnim(a) {
