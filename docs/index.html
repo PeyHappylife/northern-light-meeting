@@ -115,6 +115,12 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .form-panel.success-full #panel-success { width: 100%; max-width: 540px; }
+        /* 完了画面の右上「ページを閉じる」ボタン（通常は非表示） */
+        #success-close-btn { display: none; position: absolute; top: 16px; right: 18px; z-index: 6;
+            background: none; border: none; font-size: 34px; line-height: 1; color: var(--text-muted);
+            cursor: pointer; font-weight: 300; padding: 4px 8px; }
+        #success-close-btn:hover { color: var(--text-main); }
+        .form-panel.success-full #success-close-btn { display: block; }
         
         /* 各演出出現アニメーション */
         .modal-overlay.anim-neon.active .form-panel { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease; }
@@ -355,7 +361,7 @@
                             <div class="form-group lg"><label>メールアドレス<span class="required-badge">＊</span></label><input type="email" id="ins-email" placeholder="info@example.com" style="margin-bottom:8px;" required><input type="email" id="ins-email-chk" placeholder="確認用" required></div>
                             <div class="form-group lg"><label>電話番号<span class="required-badge">＊</span></label><input type="tel" id="ins-phone" placeholder="090-1234-5678" required></div>
                             <div class="form-group" id="note-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
-                            <div class="form-group"><label>アップライン<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
+                            <div class="form-group lg"><label>アップライン<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
                             <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div><div class="field-err" id="ticket-err"></div></div>
                             <button type="submit" id="btn-confirm" class="submit-btn"><span class="btn-gauge"></span><span class="btn-text">確認画面へ →</span></button>
                         </form>
@@ -377,6 +383,7 @@
                         <button onclick="backToInput()" class="submit-btn btn-secondary">修正する</button>
                     </div>
                     
+                    <button id="success-close-btn" onclick="closeSuccessPage()" aria-label="ページを閉じる">×</button>
                     <div id="panel-success" class="hidden" style="text-align:center; padding:52px 16px;">
                         <div class="mail-send-anim" aria-hidden="true">✉️</div>
                         <h2 id="success-title" style="font-size:22px; margin:0 0 18px 0; min-height:1.4em;">お申し込み完了しました</h2>
@@ -530,6 +537,13 @@
                 clearInterval(confettiLoopInterval);
                 confettiLoopInterval = null;
             }
+        }
+        // 完了画面の「ページを閉じる」：タブを閉じる（閉じられない環境では確認後トップへ戻す）
+        function closeSuccessPage() {
+            if (confettiLoopInterval) { clearInterval(confettiLoopInterval); confettiLoopInterval = null; }
+            try { window.open('', '_self'); window.close(); } catch (e) {}
+            // スクリプトで開いたタブ以外は閉じられないため、フォールバックで読み込み直す
+            setTimeout(function() { window.location.reload(); }, 200);
         }
 
         function renderSelectors(events) {
@@ -833,10 +847,9 @@
                     if (btnGauge) btnGauge.classList.remove('fill','loading','done');
                     btn.classList.remove('gauge-glow');
                 } else {
-                    // 応答が返った瞬間にゲージを一気に100%まで満たし、発光エフェクトを発火
+                    // 応答が返った瞬間にゲージを一気に100%まで満たす
                     if (btnGauge) { btnGauge.classList.remove('loading'); btnGauge.classList.add('done'); }
-                    btn.classList.remove('gauge-glow'); void btn.offsetWidth; btn.classList.add('gauge-glow');
-                    // 満タン＋発光を見せてから成功画面へ
+                    // ゲージが溜まったらすぐ完了画面へ
                     setTimeout(function() {
                         document.getElementById('panel-confirm').classList.add('hidden');
                         document.getElementById('panel-success').classList.remove('hidden');
@@ -854,7 +867,7 @@
                         if (activeEvent && (activeEvent.animation === "confetti" || activeEvent.animation === "neon" || activeEvent.animation === "stardust" || activeEvent.animation === "slide" || activeEvent.animation === "theatrical" || activeEvent.animation === "transform")) {
                             startConfettiLoop();
                         }
-                    }, 300);
+                    }, 0);
                 }
             })
             .catch(err => {
