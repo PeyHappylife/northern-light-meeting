@@ -829,11 +829,28 @@
             if (!_twCaptured) { if (t) _twTitle = t.textContent; if (m) _twMsg = m.textContent; _twCaptured = true; } // 改行は white-space:pre-line により \n で保持
             typeWriter(t, _twTitle, 75, function(){ typeWriter(m, _twMsg, 32); });
         }
+        // 完了画面を表示（ゲージ満タンで即実行・サーバー応答は待たない）
+        function showSuccessScreen() {
+            document.getElementById('panel-confirm').classList.add('hidden');
+            document.getElementById('panel-success').classList.remove('hidden');
+            // 完了画面は画面いっぱいに表示
+            stopViewportSync();
+            document.getElementById('form-modal').classList.add('success-full');
+            document.getElementById('form-panel-view').classList.add('success-full');
+            playSuccessTypewriter();   // 完了テキストをタイプライター表示
+            const closeWrapper = document.getElementById('modal-close-wrapper');
+            if (closeWrapper) closeWrapper.classList.add('hidden');
+            document.getElementById('form-panel-view').scrollTop = 0;
+            window.scrollTo(0, 0);
+            if (activeEvent && (activeEvent.animation === "confetti" || activeEvent.animation === "neon" || activeEvent.animation === "stardust" || activeEvent.animation === "slide" || activeEvent.animation === "theatrical" || activeEvent.animation === "transform")) {
+                startConfettiLoop();
+            }
+        }
         function submitDataToGAS() {
             const btn = document.getElementById('btn-final'); btn.disabled = true;
             const btnText = btn.querySelector('.btn-text'); if (btnText) btnText.textContent = "送信中...";
             const btnGauge = btn.querySelector('.btn-gauge');
-            if (btnGauge) { btnGauge.classList.remove('fill','loading','done'); void btnGauge.offsetWidth; btnGauge.classList.add('loading'); } // 読み込み速度に追従してゆっくり充填
+            if (btnGauge) { btnGauge.classList.remove('fill','loading','done'); void btnGauge.offsetWidth; btnGauge.classList.add('loading'); } // 1.5秒で満タン
             btn.classList.remove('gauge-glow');
             if (activeEvent && activeEvent.animation === "neon") {
                 btn.style.boxShadow = "0 0 30px #0ed59e, inset 0 0 15px #ffffff";
@@ -845,46 +862,39 @@
                 ...currentPayload
             });
 
+            let transitioned = false;
+            // 登録リクエストはバックグラウンドで実行（画面遷移はこれを待たない）
             fetch(GAS_API_URL + '?' + params.toString())
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
                     alert("送信エラー: " + data.error);
-                    btn.disabled = false;
-                    if (btnText) btnText.textContent = "申し込みを確定する";
-                    if (btnGauge) btnGauge.classList.remove('fill','loading','done');
-                    btn.classList.remove('gauge-glow');
-                } else {
-                    // 応答が返った瞬間にゲージを一気に100%まで満たす
-                    if (btnGauge) { btnGauge.classList.remove('loading'); btnGauge.classList.add('done'); }
-                    // ゲージが溜まったらすぐ完了画面へ
-                    setTimeout(function() {
-                        document.getElementById('panel-confirm').classList.add('hidden');
-                        document.getElementById('panel-success').classList.remove('hidden');
-                        // 完了画面は画面いっぱいに表示
-                        stopViewportSync();
-                        document.getElementById('form-modal').classList.add('success-full');
-                        document.getElementById('form-panel-view').classList.add('success-full');
-                        playSuccessTypewriter();   // 完了テキストをタイプライター表示
-                        flushConfirmations();      // 申込完了直後：この申込みの確認メールを送信（非同期）
-                        const closeWrapper = document.getElementById('modal-close-wrapper');
-                        if (closeWrapper) closeWrapper.classList.add('hidden');
-                        document.getElementById('form-panel-view').scrollTop = 0;
-                        window.scrollTo(0, 0);
-
-                        if (activeEvent && (activeEvent.animation === "confetti" || activeEvent.animation === "neon" || activeEvent.animation === "stardust" || activeEvent.animation === "slide" || activeEvent.animation === "theatrical" || activeEvent.animation === "transform")) {
-                            startConfettiLoop();
-                        }
-                    }, 0);
+                    if (!transitioned) {
+                        btn.disabled = false;
+                        if (btnText) btnText.textContent = "申し込みを確定する";
+                        if (btnGauge) btnGauge.classList.remove('fill','loading','done');
+                        btn.classList.remove('gauge-glow');
+                    }
+                    return;
                 }
+                flushConfirmations(); // 登録完了 → この申込みの確認メールを送信（非同期）
             })
             .catch(err => {
                 alert("送信エラー: " + err.message);
-                btn.disabled = false;
-                if (btnText) btnText.textContent = "申し込みを確定する";
-                if (btnGauge) btnGauge.classList.remove('fill');
+                if (!transitioned) {
+                    btn.disabled = false;
+                    if (btnText) btnText.textContent = "申し込みを確定する";
+                    if (btnGauge) btnGauge.classList.remove('fill','loading','done');
+                }
                 console.error(err);
             });
+
+            // ゲージが満タン(1.5秒)になったら、応答を待たずに即・完了画面へ
+            setTimeout(function() {
+                if (transitioned) return;
+                transitioned = true;
+                showSuccessScreen();
+            }, 1500);
         }
 
         /* 申し込み完了画面：無重力スターダストのループ制御（1秒間隔余韻） */
