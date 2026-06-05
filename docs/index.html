@@ -347,8 +347,8 @@
                             <div class="form-group lg"><label>メールアドレス<span class="required-badge">＊</span></label><input type="email" id="ins-email" placeholder="info@example.com" style="margin-bottom:8px;" required><input type="email" id="ins-email-chk" placeholder="確認用" required></div>
                             <div class="form-group lg"><label>電話番号<span class="required-badge">＊</span></label><input type="tel" id="ins-phone" placeholder="090-1234-5678" required></div>
                             <div class="form-group" id="note-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
-                            <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div><div class="field-err" id="ticket-err"></div></div>
                             <div class="form-group"><label>アップライン<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
+                            <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div><div class="field-err" id="ticket-err"></div></div>
                             <button type="submit" id="btn-confirm" class="submit-btn"><span class="btn-gauge"></span><span class="btn-text">確認画面へ →</span></button>
                         </form>
                     </div>
@@ -385,7 +385,6 @@
 
         let globalEvents = []; let currentPayload = {}; let activeEvent = null;
         let confettiLoopInterval = null;
-        let confirmUnlocked = false; let _uplineTimer = null; // アップライン入力開始から2秒で確認ボタン解禁
 
         window.onload = function() {
             try {
@@ -413,18 +412,6 @@
                 if (_phoneEl) {
                     _phoneEl.addEventListener('focus', function() { setTimeout(syncModalToViewport, 350); });
                     _phoneEl.addEventListener('input', function() { setTimeout(syncModalToViewport, 60); });
-                }
-                // アップライン入力が始まって2秒経ったら「確認画面へ」ボタンを表示
-                const _uplineEl = document.getElementById('ins-upline');
-                if (_uplineEl) {
-                    _uplineEl.addEventListener('input', function() {
-                        if (confirmUnlocked || _uplineTimer) return;
-                        _uplineTimer = setTimeout(function() {
-                            confirmUnlocked = true;
-                            _uplineTimer = null;
-                            updateSteps();
-                        }, 2000);
-                    });
                 }
                 updateSteps();
 
@@ -466,7 +453,6 @@
         function openFormModal() {
             const overlay = document.getElementById('form-modal');
             overlay.className = "modal-overlay";
-            confirmUnlocked = false; if (_uplineTimer) { clearTimeout(_uplineTimer); _uplineTimer = null; } // 確認ボタンの2秒解禁をリセット
             const fp = document.getElementById('form-panel-view');
             if (fp) { fp.style.transform = ''; fp.style.webkitTransform = ''; } // 再入場アニメ用にリセット
             const anim = activeEvent && activeEvent.animation ? activeEvent.animation : "neon";
@@ -710,8 +696,8 @@
                 }
                 if (!noteHidden && !stepComplete(g)) chainOk = false;
             });
-            // 確認ボタンは「全完了」かつ「アップライン入力開始から2秒経過(confirmUnlocked)」で表示
-            const showBtn = chainOk && confirmUnlocked;
+            // 確認ボタンは全項目完了（＝枚数タップ済み）で表示
+            const showBtn = chainOk;
             if (btn) {
                 const btnWasHidden = !btn.classList.contains('step-visible');
                 btn.classList.toggle('step-visible', showBtn);
