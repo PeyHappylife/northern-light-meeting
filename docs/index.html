@@ -161,6 +161,8 @@
         /* 送信ゲージ：読み込み中はゆっくり90%まで前進、応答が返ったら一気に100%（=読み込み速度に追従） */
         #btn-final .btn-gauge.loading { width: 90%; transition: width 6s cubic-bezier(0.05, 0.7, 0.1, 1); }
         #btn-final .btn-gauge.done { width: 100%; transition: width 0.3s ease-out; background: rgba(255,255,255,0.6); }
+        /* 「確認画面へ」ボタン：押下で1.5秒かけてゲージが満タンになる */
+        #btn-confirm .btn-gauge.fill { width: 100%; transition: width 1.5s ease-out; }
         /* ゲージ満タン時の発光エフェクト */
         @keyframes gauge-full-glow {
             0%   { box-shadow: 0 4px 12px rgba(0,174,239,0.25); }
@@ -347,7 +349,7 @@
                             <div class="form-group" id="note-group"><label style="color:var(--text-muted); font-weight:normal;">初めて参加される一般の方がいれば予定人数を入れてください</label><input type="text" id="ins-note"></div>
                             <div class="form-group lg"><label>枚数<span class="required-badge">＊</span></label><div id="ticket-notes"><div class="form-note red" id="note-firsttime">※初参加の一般の方はコチラのお申し込みは不要です。</div><div class="form-note red">※プライムカスタマーの方はお申し込み必須です（有料となります）</div></div><div class="grid-radio-group" id="ticket-grid"></div><div class="field-err" id="ticket-err"></div></div>
                             <div class="form-group"><label>アップライン<span class="required-badge">＊</span></label><input type="text" id="ins-upline" required></div>
-                            <button type="submit" class="submit-btn">確認画面へ →</button>
+                            <button type="submit" id="btn-confirm" class="submit-btn"><span class="btn-gauge"></span><span class="btn-text">確認画面へ →</span></button>
                         </form>
                     </div>
                     
@@ -581,8 +583,12 @@
             if (el.id === 'ins-phone') {
                 const d = el.value.replace(/[^0-9]/g, '');
                 if (v === '') return 'こちらにもご記入をお願いします🙏';
-                if (d.length !== 10 && d.length !== 11) return '電話番号は10桁または11桁でご入力ください📲';
-                if (d.length === 11 && !/^0[789]0/.test(d)) return '携帯番号（11桁）は 070・080・090 で始まる番号でご入力ください📲';
+                const isMobile = /^0[6789]0/.test(d);   // 060・070・080・090 で始まる＝携帯（11桁必須）
+                if (isMobile) {
+                    if (d.length !== 11) return '携帯番号は11桁でご入力ください📲';
+                } else {
+                    if (d.length !== 10 && d.length !== 11) return '電話番号は10桁または11桁でご入力ください📲';
+                }
                 return '';
             }
             if (el.id === 'ins-email-chk') {
@@ -654,6 +660,11 @@
                 if (!firstInvalid) firstInvalid = document.getElementById('ticket-grid');
             } else if (ticketErr) { ticketErr.style.display = 'none'; }
             if (firstInvalid) { firstInvalid.scrollIntoView({ block: 'center' }); if (firstInvalid.focus) firstInvalid.focus(); return; }
+            // 「確認画面へ」ボタン：押下で鼓動を止め、ゲージを1.5秒かけて満タンにしてから遷移
+            const _cBtn = document.getElementById('btn-confirm');
+            const _cGauge = _cBtn ? _cBtn.querySelector('.btn-gauge') : null;
+            if (_cBtn) { _cBtn.classList.remove('btn-confirm-ready'); _cBtn.disabled = true; }
+            if (_cGauge) { _cGauge.classList.remove('fill'); void _cGauge.offsetWidth; _cGauge.classList.add('fill'); }
             const form = document.getElementById('reg-form');
             const showNote = !(activeEvent && activeEvent.showNote === false);
             currentPayload = { sheetName: form.dataset.sheetName, name: document.getElementById('ins-name').value, kana: document.getElementById('ins-kana').value, email: document.getElementById('ins-email').value, phone: document.getElementById('ins-phone').value, note: showNote ? (document.getElementById('ins-note').value || 'なし') : '', tickets: ticketEl.value, upline: document.getElementById('ins-upline').value };
@@ -669,24 +680,30 @@
             const inputPanel = document.getElementById('panel-input');
             const confirmPanel = document.getElementById('panel-confirm');
 
-            inputPanel.style.opacity = '0';
-            if (activeEvent && activeEvent.animation === "slide") {
-                inputPanel.style.transform = "translateX(-30px)";
-            }
+            // ゲージが満タン(1.5秒)になってから確認画面へ遷移
             setTimeout(function() {
-                inputPanel.classList.add('hidden');
-                confirmPanel.classList.remove('hidden');
-                confirmPanel.style.opacity = '0';
+                inputPanel.style.opacity = '0';
                 if (activeEvent && activeEvent.animation === "slide") {
-                    confirmPanel.style.transform = "translateX(30px)";
+                    inputPanel.style.transform = "translateX(-30px)";
                 }
                 setTimeout(function() {
-                    confirmPanel.style.opacity = '1';
-                    confirmPanel.style.transform = "translateX(0)";
-                }, 20);
-                document.getElementById('form-panel-view').scrollTop = 0;
-                window.scrollTo(0, 0);
-            }, 150);
+                    inputPanel.classList.add('hidden');
+                    confirmPanel.classList.remove('hidden');
+                    confirmPanel.style.opacity = '0';
+                    if (activeEvent && activeEvent.animation === "slide") {
+                        confirmPanel.style.transform = "translateX(30px)";
+                    }
+                    setTimeout(function() {
+                        confirmPanel.style.opacity = '1';
+                        confirmPanel.style.transform = "translateX(0)";
+                    }, 20);
+                    document.getElementById('form-panel-view').scrollTop = 0;
+                    window.scrollTo(0, 0);
+                    // ボタン・ゲージをリセット（戻った時のため）
+                    if (_cGauge) _cGauge.classList.remove('fill');
+                    if (_cBtn) _cBtn.disabled = false;
+                }, 150);
+            }, 1500);
         }
         function backToInput() {
             const inputPanel = document.getElementById('panel-input');
