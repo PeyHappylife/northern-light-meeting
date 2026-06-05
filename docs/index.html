@@ -407,6 +407,17 @@
                     const te = document.getElementById('ticket-err'); if (te) te.style.display = 'none';
                     updateSteps();
                 });
+                // 電話番号入力中：キーボードで「確認画面へ」ボタンが隠れないよう可視領域に追従＋ボタンを表示
+                const _phoneEl = document.getElementById('ins-phone');
+                if (_phoneEl) {
+                    const _revealConfirm = function() {
+                        syncModalToViewport();
+                        const _b = document.getElementById('btn-confirm');
+                        if (_b) _b.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    };
+                    _phoneEl.addEventListener('focus', function() { setTimeout(_revealConfirm, 350); });
+                    _phoneEl.addEventListener('input', function() { setTimeout(_revealConfirm, 60); });
+                }
                 updateSteps();
 
                 setTimeout(function() {
@@ -465,8 +476,42 @@
             if (typeof updateSteps === 'function') updateSteps();  // 1項目ずつ表示を初期化
             // 入場アニメ完了後にパネルの transform を解除（コンポジタ層によるタップ判定ズレ/フォーカス不具合を回避）
             setTimeout(function() { if (fp) { fp.style.transform = 'none'; fp.style.webkitTransform = 'none'; } }, 500);
+            // ソフトキーボードでモーダル下部（ボタン）が隠れないよう、表示領域(visualViewport)に追従
+            startViewportSync();
+        }
+        // ── ソフトキーボード対応：モーダルを可視領域(visualViewport)に収める ──────────
+        var _vvSyncHandler = null;
+        function syncModalToViewport() {
+            const vv = window.visualViewport;
+            const overlay = document.getElementById('form-modal');
+            const panel = document.getElementById('form-panel-view');
+            if (!vv || !overlay || !overlay.classList.contains('active')) return;
+            // オーバーレイの高さ・位置をキーボードで縮んだ可視領域に合わせる → パネルが鍵盤の上に収まる
+            overlay.style.height = vv.height + 'px';
+            overlay.style.top = (vv.offsetTop || 0) + 'px';
+            if (panel) panel.style.maxHeight = (vv.height - 24) + 'px';
+        }
+        function startViewportSync() {
+            if (!window.visualViewport) return;
+            if (_vvSyncHandler) return;
+            _vvSyncHandler = function() { syncModalToViewport(); };
+            window.visualViewport.addEventListener('resize', _vvSyncHandler);
+            window.visualViewport.addEventListener('scroll', _vvSyncHandler);
+            syncModalToViewport();
+        }
+        function stopViewportSync() {
+            const overlay = document.getElementById('form-modal');
+            const panel = document.getElementById('form-panel-view');
+            if (window.visualViewport && _vvSyncHandler) {
+                window.visualViewport.removeEventListener('resize', _vvSyncHandler);
+                window.visualViewport.removeEventListener('scroll', _vvSyncHandler);
+            }
+            _vvSyncHandler = null;
+            if (overlay) { overlay.style.height = ''; overlay.style.top = ''; }
+            if (panel) panel.style.maxHeight = '';
         }
         function closeFormModal() {
+            stopViewportSync();
             if (!document.getElementById('panel-success').classList.contains('hidden')) return;
             document.getElementById('form-modal').classList.remove('active');
             const sy = parseInt(document.body.dataset.scrollLock || '0', 10);
