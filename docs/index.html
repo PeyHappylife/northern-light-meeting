@@ -745,6 +745,25 @@
             e.style.display = 'none'; return true;
         }
 
+        // 確認画面：3秒かけて一定速度でいちばん下までスクロール
+        function slowScrollToBottom(duration) {
+            const panel = document.getElementById('form-panel-view');
+            let el = panel;
+            let maxScroll = panel.scrollHeight - panel.clientHeight;
+            if (maxScroll <= 4) { // パネル自体がスクロールしない場合はページをスクロール
+                el = document.scrollingElement || document.documentElement;
+                maxScroll = el.scrollHeight - el.clientHeight;
+            }
+            if (maxScroll <= 4) return;
+            const start = el.scrollTop;
+            const dist = maxScroll - start;
+            const t0 = performance.now();
+            (function step(now) {
+                const p = Math.min(1, (now - t0) / duration); // 一定速度
+                el.scrollTop = start + dist * p;
+                if (p < 1) requestAnimationFrame(step);
+            })(t0);
+        }
         function goToConfirm(e) {
             e.preventDefault();
             // 必須・形式チェック（入力されるまで消えないインラインエラー）
@@ -790,6 +809,8 @@
             document.getElementById('form-panel-view').scrollTop = 0;
             window.scrollTo(0, 0);
             if (_cBtn) _cBtn.disabled = false;
+            // 確認内容が出たら3秒かけてゆっくり下までスクロール
+            setTimeout(function() { slowScrollToBottom(3000); }, 150);
         }
         function backToInput() {
             const inputPanel = document.getElementById('panel-input');
