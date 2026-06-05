@@ -538,12 +538,10 @@
                 confettiLoopInterval = null;
             }
         }
-        // 完了画面の「ページを閉じる」：タブを閉じる（閉じられない環境では確認後トップへ戻す）
+        // 完了画面の「×」：最初の画面に戻る（読み込み直し）
         function closeSuccessPage() {
             if (confettiLoopInterval) { clearInterval(confettiLoopInterval); confettiLoopInterval = null; }
-            try { window.open('', '_self'); window.close(); } catch (e) {}
-            // スクリプトで開いたタブ以外は閉じられないため、フォールバックで読み込み直す
-            setTimeout(function() { window.location.reload(); }, 200);
+            window.location.reload();
         }
 
         function renderSelectors(events) {
