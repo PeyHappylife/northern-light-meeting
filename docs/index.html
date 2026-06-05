@@ -704,7 +704,7 @@
         }
         // 未送信の確認メールをサーバーに送らせる（非同期・結果は待たない＝UIをブロックしない）
         function flushConfirmations() {
-            try { fetch(GAS_API_URL + '?action=flushConfirmations').catch(function(){}); } catch (e) {}
+            try { fetch(GAS_API_URL + '?action=flushConfirmations', { keepalive: true }).catch(function(){}); } catch (e) {}
         }
 
         // 完了画面のタイプライター表示
