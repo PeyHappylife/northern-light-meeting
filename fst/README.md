@@ -1,0 +1,36 @@
+# FST スライド（ファーストステップ・トレーニング）
+
+`fst_slides.html` — クリックで進む13枚のスライド。各シーンにSVG図解つき。
+
+## 動かしかた
+ブラウザでファイルを開くだけ（外部依存はGoogle Fontsのみ）。
+
+- クリック / → / Space … 次へ（拍の再生中にクリックすると、残りの拍をまとめて表示）
+- ← … 前へ
+- A … 自動再生（拍が終わってから「読む間」2.0秒で次へ）
+- T … 尺（実測）の一覧
+- URLの `#5` などで直接そのシーンから開始
+
+## 拍（beat）の決まり
+- 図の要素は1拍ずつ。前の拍のアニメーションが終わってから次を出す（重ねない）。
+- 同時に出したい要素は、同じ `data-b` にまとめる。
+- 実装は `.beat[data-b="n"]` を番号順にグループ化し、`Animation.finished` を待ってから次へ進む。
+
+```html
+<g class="beat" data-b="3" data-anim="grow">…</g>   <!-- rise（既定）/ grow / draw -->
+<line class="acc" data-anim="draw" … />             <!-- 拍の中の線だけ描画アニメ -->
+```
+
+## 尺の計測
+拍の時間は実測値。計測して `MEASURED` 配列を差し替える：
+
+```
+npm i playwright-core
+node tools/measure-fst.js "$PWD/fst/fst_slides.html" 2
+```
+
+各シーンの尺 ＝ 実測した拍の時間 ＋ 読む間 2.0秒（`READ_MS`）。
+
+## 原稿の差し替え
+本文は各 `<section class="scene">` の `.txt` に、図は `<figure>` 内のインラインSVGにそのまま書いてある。
+差し替えたら拍番号（`data-b`）を振り直し、上記の計測をやり直す。

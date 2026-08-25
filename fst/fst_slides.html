@@ -1,0 +1,794 @@
+<title>ファーストステップ紙芝居</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root{
+    --ground:#EDF1EA;
+    --surface:#FFFFFF;
+    --sunk:#E2E8DE;
+    --ink:#14201A;
+    --muted:#5A6A5E;
+    --rule:#C7D2C4;
+    --leaf:#2C6B45;
+    --harvest:#A9711B;
+    --leaf-wash:rgba(44,107,69,.10);
+    --harvest-wash:rgba(169,113,27,.12);
+
+    --display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+    --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0D120F; --surface:#151C17; --sunk:#111814;
+      --ink:#E3EAE0; --muted:#93A395; --rule:#29352B;
+      --leaf:#7CC894; --harvest:#DFA654;
+      --leaf-wash:rgba(124,200,148,.13); --harvest-wash:rgba(223,166,84,.14);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0D120F; --surface:#151C17; --sunk:#111814;
+    --ink:#E3EAE0; --muted:#93A395; --rule:#29352B;
+    --leaf:#7CC894; --harvest:#DFA654;
+    --leaf-wash:rgba(124,200,148,.13); --harvest-wash:rgba(223,166,84,.14);
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--body); line-height:1.85;
+    -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+  }
+  .deck{min-height:100dvh; display:flex; flex-direction:column; cursor:pointer}
+  .stage{
+    flex:1 1 auto; display:flex; align-items:center; justify-content:center;
+    padding:clamp(1.1rem,3.5vw,2.6rem) clamp(1.1rem,4vw,3rem) 6.5rem;
+  }
+
+  /* ---------- scenes ---------- */
+  .scene{display:none; width:100%; max-width:66rem}
+  .scene.is-live{display:block}
+  .scene-in{
+    display:grid; grid-template-columns:minmax(0,0.92fr) minmax(0,1fr);
+    gap:clamp(1.4rem,4vw,3.4rem); align-items:center;
+  }
+  .scene--title .scene-in{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:clamp(1.6rem,4vw,2.6rem)}
+  .scene--title .txt{max-width:34rem}
+  .scene--title figure{width:min(34rem,100%)}
+  @media (max-width:860px){
+    .scene-in{grid-template-columns:minmax(0,1fr); gap:1.4rem}
+  }
+
+  .txt{display:flex; flex-direction:column; gap:.9rem; min-width:0}
+  .eyebrow{
+    margin:0; font-family:var(--mono); font-size:.72rem; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--leaf);
+  }
+  .step-no{
+    display:inline-flex; align-items:baseline; gap:.5em;
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.2em; color:var(--muted);
+  }
+  .step-no b{font-size:1.5rem; font-weight:500; color:var(--leaf); letter-spacing:0}
+  h1{
+    margin:0; font-family:var(--display); font-weight:700; line-height:1.34;
+    font-size:clamp(1.9rem,5.4vw,3rem); text-wrap:balance;
+  }
+  h2{
+    margin:0; font-family:var(--display); font-weight:700; line-height:1.4;
+    font-size:clamp(1.5rem,4vw,2.3rem); text-wrap:balance;
+  }
+  .eli5{
+    margin:0; font-size:clamp(1.08rem,2.5vw,1.42rem); font-weight:500; line-height:1.7;
+    text-wrap:balance; word-break:keep-all; overflow-wrap:anywhere;
+  }
+  .eli5 em{font-style:normal; color:var(--leaf); font-weight:700}
+  .note{margin:0; font-size:clamp(.9rem,1.7vw,1rem); color:var(--muted); max-width:32rem}
+  .lead{margin:0; font-size:clamp(1rem,2.2vw,1.18rem); color:var(--muted); max-width:30rem}
+
+  /* rule rows (used on the two list scenes) */
+  .rows{display:flex; flex-direction:column; gap:.55rem; margin:0; padding:0; list-style:none}
+  .rows li{
+    display:grid; grid-template-columns:1.6rem minmax(0,1fr); gap:.7rem; align-items:start;
+    font-size:clamp(.92rem,1.8vw,1.02rem); line-height:1.7;
+  }
+  .rows .n{
+    font-family:var(--mono); font-size:.78rem; color:var(--leaf);
+    border:1px solid var(--rule); border-radius:2px; text-align:center; line-height:1.55rem; height:1.6rem;
+  }
+  .rows .law{display:block; font-size:.78rem; color:var(--muted); font-family:var(--mono); letter-spacing:.02em}
+
+  figure{margin:0; display:flex; flex-direction:column; gap:.7rem; min-width:0}
+  figure svg{
+    display:block; width:100%; max-width:100%; height:auto;
+    background:var(--surface); border:1px solid var(--rule); border-radius:3px;
+    padding:.4rem;
+  }
+  figcaption{font-size:.84rem; color:var(--muted); font-family:var(--mono); line-height:1.7}
+
+  /* svg ink */
+  .ink{stroke:currentColor; fill:none; stroke-width:2}
+  .ink-fill{fill:currentColor; stroke:none}
+  .soft{stroke:var(--rule); fill:none; stroke-width:2}
+  .soft-fill{fill:var(--sunk); stroke:none}
+  .acc{stroke:var(--leaf); fill:none; stroke-width:2.4}
+  .acc-fill{fill:var(--leaf); stroke:none}
+  .sig{stroke:var(--harvest); fill:none; stroke-width:2.4}
+  .sig-fill{fill:var(--harvest); stroke:none}
+  .wash{fill:var(--leaf-wash); stroke:none}
+  .wash-sig{fill:var(--harvest-wash); stroke:none}
+  text{font-family:var(--body); fill:currentColor; font-size:13px}
+  text.mono{font-family:var(--mono); font-size:11px; letter-spacing:.08em}
+  text.acc-t{fill:var(--leaf)}
+  text.sig-t{fill:var(--harvest)}
+  text.mut{fill:var(--muted)}
+  text.big{font-family:var(--display); font-size:22px; font-weight:700}
+
+  /* ---------- beats ---------- */
+  .beat{opacity:0}
+  .beat.on{opacity:1}
+
+  /* ---------- hud ---------- */
+  .hud{
+    position:fixed; left:0; right:0; bottom:0; z-index:5;
+    display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:1rem; align-items:center;
+    padding:.6rem clamp(.8rem,3vw,1.6rem);
+    background:color-mix(in srgb, var(--ground) 88%, transparent);
+    border-top:1px solid var(--rule);
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; color:var(--muted);
+    cursor:default;
+  }
+  @supports not (background:color-mix(in srgb, red 50%, blue)){ .hud{background:var(--ground)} }
+  .hud-l{display:flex; align-items:baseline; gap:.6rem; white-space:nowrap}
+  .hud-l .idx{color:var(--ink)}
+  .hud-l .nm{font-family:var(--body); letter-spacing:0; color:var(--muted)}
+  @media (max-width:640px){ .hud-l .nm{display:none} }
+  .rail{display:flex; gap:.32rem; align-items:center; justify-content:center; flex-wrap:wrap}
+  .dot{
+    width:.85rem; height:.85rem; padding:0; border:1px solid var(--rule); background:transparent;
+    border-radius:50%; cursor:pointer;
+  }
+  .dot[aria-current="true"]{background:var(--leaf); border-color:var(--leaf)}
+  .dot.seen{background:var(--rule)}
+  .dot:focus-visible{outline:2px solid var(--leaf); outline-offset:2px}
+  .hud-r{display:flex; align-items:center; gap:.7rem; white-space:nowrap}
+  .len{font-variant-numeric:tabular-nums; color:var(--ink)}
+  .len small{color:var(--muted); font-size:.92em}
+  .btn{
+    font:inherit; letter-spacing:.06em; color:var(--muted); background:transparent;
+    border:1px solid var(--rule); border-radius:2px; padding:.22rem .6rem; cursor:pointer;
+  }
+  .btn:hover{color:var(--ink); border-color:var(--muted)}
+  .btn[aria-pressed="true"]{color:var(--leaf); border-color:var(--leaf)}
+  .btn:focus-visible{outline:2px solid var(--leaf); outline-offset:2px}
+  @media (max-width:640px){ .hud{grid-template-columns:auto minmax(0,1fr)} .hud-r .len{display:none} }
+
+  /* ---------- timing sheet ---------- */
+  .sheet{
+    position:fixed; inset:auto 0 0 0; z-index:6; max-height:78dvh; overflow:auto;
+    background:var(--surface); border-top:1px solid var(--rule);
+    padding:clamp(1rem,3vw,1.8rem) clamp(1rem,4vw,2rem) 5rem; cursor:default;
+  }
+  .sheet[hidden]{display:none}
+  .sheet h3{margin:0 0 .2rem; font-family:var(--display); font-size:1.1rem}
+  .sheet p{margin:0 0 1rem; font-size:.86rem; color:var(--muted)}
+  .sheet table{width:100%; border-collapse:collapse; font-size:.84rem; font-variant-numeric:tabular-nums}
+  .sheet th,.sheet td{text-align:right; padding:.42rem .5rem; border-bottom:1px solid var(--rule)}
+  .sheet th:first-child,.sheet td:first-child{text-align:left}
+  .sheet th{font-family:var(--mono); font-weight:400; font-size:.72rem; letter-spacing:.08em; color:var(--muted)}
+  .sheet tfoot td{font-weight:700; border-bottom:0}
+  .sheet .close{position:absolute; right:1rem; top:.8rem}
+
+  .hint{
+    position:fixed; right:clamp(.8rem,3vw,1.6rem); bottom:3.4rem; z-index:4;
+    font-family:var(--mono); font-size:.68rem; letter-spacing:.08em; color:var(--muted);
+    opacity:.9; pointer-events:none;
+  }
+  @media (max-width:640px){ .hint{display:none} }
+
+  @media (prefers-reduced-motion:reduce){ .beat{opacity:1} }
+</style>
+
+<div class="deck" id="deck">
+  <div class="stage" id="stage">
+
+<!-- ===== 01 title ===== -->
+<section class="scene scene--title" data-name="タイトル" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="eyebrow beat" data-b="1">First Step Training</p>
+      <h1 class="beat" data-b="1">最初の一歩を、<br>順番どおりに。</h1>
+      <p class="lead beat" data-b="1">はじめの30日でやることを、13枚にしました。画面をクリックすると進みます。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="三段の階段を一段ずつ上り、頂上の旗にたどりつく図">
+        <g class="beat" data-b="2"><rect class="soft-fill" x="40" y="206" width="118" height="52"/><rect class="ink" x="40" y="206" width="118" height="52"/></g>
+        <g class="beat" data-b="3"><rect class="soft-fill" x="158" y="160" width="118" height="98"/><rect class="ink" x="158" y="160" width="118" height="98"/></g>
+        <g class="beat" data-b="4"><rect class="soft-fill" x="276" y="114" width="118" height="144"/><rect class="ink" x="276" y="114" width="118" height="144"/></g>
+        <g class="beat" data-b="5" data-anim="grow"><circle class="acc-fill" cx="99" cy="188" r="11"/><text class="mono acc-t" x="99" y="288" text-anchor="middle">いま</text></g>
+        <g class="beat" data-b="6"><line class="acc" x1="335" y1="114" x2="335" y2="52"/><polygon class="acc-fill" points="335,54 392,68 335,82"/><text class="mono mut" x="335" y="288" text-anchor="middle">30日後</text></g>
+      </svg>
+      <figcaption class="beat" data-b="7">一段ずつ。飛ばすと、上れない。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 02 FSTとは ===== -->
+<section class="scene" data-name="FSTってなに？" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="eyebrow beat" data-b="1">Q1</p>
+      <h2 class="beat" data-b="1">FSTって、なに？</h2>
+      <p class="eli5 beat" data-b="1">やることを、<em>順番にならべた紙</em>です。</p>
+      <p class="note beat" data-b="6">新しいことを始めると、やることが一度に押し寄せます。順番が決まっていれば、迷いません。迷わなければ、続きます。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="ばらばらのカードが、番号のついた一列に並びなおる図">
+        <g class="beat" data-b="2">
+          <g transform="rotate(-14 76 96)"><rect class="soft-fill" x="40" y="70" width="72" height="52"/><rect class="soft" x="40" y="70" width="72" height="52"/></g>
+          <g transform="rotate(9 120 168)"><rect class="soft-fill" x="84" y="142" width="72" height="52"/><rect class="soft" x="84" y="142" width="72" height="52"/></g>
+          <g transform="rotate(-5 68 232)"><rect class="soft-fill" x="32" y="206" width="72" height="52"/><rect class="soft" x="32" y="206" width="72" height="52"/></g>
+          <text class="mono mut" x="86" y="286" text-anchor="middle">やること</text>
+        </g>
+        <g class="beat" data-b="3"><line class="ink" x1="176" y1="164" x2="222" y2="164"/><polygon class="ink-fill" points="220,156 238,164 220,172"/></g>
+        <g class="beat" data-b="4">
+          <rect class="wash" x="262" y="62" width="132" height="52"/><rect class="acc" x="262" y="62" width="132" height="52"/><text class="acc-t" x="328" y="94" text-anchor="middle">1 目的</text>
+          <rect class="wash" x="262" y="138" width="132" height="52"/><rect class="acc" x="262" y="138" width="132" height="52"/><text class="acc-t" x="328" y="170" text-anchor="middle">2 体験</text>
+          <rect class="wash" x="262" y="214" width="132" height="52"/><rect class="acc" x="262" y="214" width="132" height="52"/><text class="acc-t" x="328" y="246" text-anchor="middle">3 名簿</text>
+        </g>
+        <g class="beat" data-b="5"><text class="mono acc-t" x="328" y="286" text-anchor="middle">この順番でやる</text></g>
+      </svg>
+      <figcaption class="beat" data-b="6">同じ作業でも、並べ直すだけで進みかたが変わる。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 03 なぜ順番 ===== -->
+<section class="scene" data-name="なぜ順番が大事？" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="eyebrow beat" data-b="1">Q2</p>
+      <h2 class="beat" data-b="1">なぜ、順番が大事なの？</h2>
+      <p class="eli5 beat" data-b="1">家は、<em>下からつくる</em>からです。</p>
+      <p class="note beat" data-b="6">屋根から作れる家はありません。土台は「なんのためか」と「自分で使ってみたこと」。ここが無いまま人に会うと、話が続かなくなります。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="土台、柱、屋根の順に家が組み上がる図">
+        <g class="beat" data-b="2"><rect class="wash" x="104" y="228" width="232" height="30"/><rect class="acc" x="104" y="228" width="232" height="30"/><text class="mono acc-t" x="220" y="284" text-anchor="middle">土台＝目的と体験</text></g>
+        <g class="beat" data-b="3"><rect class="soft-fill" x="126" y="140" width="28" height="88"/><rect class="ink" x="126" y="140" width="28" height="88"/><rect class="soft-fill" x="286" y="140" width="28" height="88"/><rect class="ink" x="286" y="140" width="28" height="88"/><text class="mono mut" x="220" y="196" text-anchor="middle">名簿・約束</text></g>
+        <g class="beat" data-b="4"><polygon class="soft-fill" points="104,140 220,66 336,140"/><polyline class="ink" points="104,140 220,66 336,140 104,140"/><text class="mono mut" x="220" y="122" text-anchor="middle">結果</text></g>
+        <g class="beat" data-b="5"><line class="sig" x1="352" y1="66" x2="352" y2="228" stroke-dasharray="6 6"/><text class="mono sig-t" x="366" y="152">下から</text></g>
+      </svg>
+      <figcaption class="beat" data-b="6">結果は屋根。最後に乗るもので、最初に作るものではない。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 04 STEP1 目的 ===== -->
+<section class="scene" data-name="STEP1 目的を決める" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="step-no beat" data-b="1"><b>01</b> STEP</p>
+      <h2 class="beat" data-b="1">目的を決める</h2>
+      <p class="eli5 beat" data-b="1">「<em>なんのため？</em>」を、紙に1行で書く。</p>
+      <p class="note beat" data-b="5">金額でも、時間でも、人の名前でもかまいません。大事なのは、いつまでに、を一緒に書くこと。目的が決まると、今日やることが自動で決まります。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="的の中心に矢が刺さり、期限の札がつく図">
+        <g class="beat" data-b="2" data-anim="grow">
+          <circle class="soft-fill" cx="160" cy="152" r="92"/><circle class="ink" cx="160" cy="152" r="92"/>
+          <circle class="ink" cx="160" cy="152" r="58"/><circle class="wash" cx="160" cy="152" r="26"/><circle class="acc" cx="160" cy="152" r="26"/>
+        </g>
+        <g class="beat" data-b="3"><line class="acc" x1="330" y1="256" x2="176" y2="166" data-anim="draw"/><polygon class="acc-fill" points="178,164 162,152 172,172"/></g>
+        <g class="beat" data-b="4"><rect class="sig" x="268" y="48" width="150" height="46"/><text class="sig-t" x="343" y="77" text-anchor="middle">◯月◯日までに</text></g>
+      </svg>
+      <figcaption class="beat" data-b="5">的と期限。どちらが欠けても、矢は放てない。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 05 STEP2 自分で使う ===== -->
+<section class="scene" data-name="STEP2 自分で使ってみる" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="step-no beat" data-b="1"><b>02</b> STEP</p>
+      <h2 class="beat" data-b="1">自分で使ってみる</h2>
+      <p class="eli5 beat" data-b="1">食べたことのないお菓子は、<em>すすめられない</em>。</p>
+      <p class="note beat" data-b="6">まず自分が続けて使う。そこで感じたことが、そのまま自分の言葉になります。借りものの説明は、相手にすぐ伝わります。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="製品を自分が使い、自分の言葉が生まれる流れの図">
+        <g class="beat" data-b="2"><rect class="soft-fill" x="34" y="118" width="72" height="112" rx="10"/><rect class="ink" x="34" y="118" width="72" height="112" rx="10"/><rect class="ink" x="56" y="98" width="28" height="22"/><text class="mono mut" x="70" y="256" text-anchor="middle">製品</text></g>
+        <g class="beat" data-b="3"><line class="ink" x1="118" y1="174" x2="164" y2="174"/><polygon class="ink-fill" points="162,166 180,174 162,182"/><text class="mono mut" x="149" y="158" text-anchor="middle">つづけて使う</text></g>
+        <g class="beat" data-b="4"><circle class="wash" cx="228" cy="132" r="24"/><circle class="acc" cx="228" cy="132" r="24"/><path class="wash" d="M198 232 v-26 a30 30 0 0 1 60 0 v26 z"/><path class="acc" d="M198 232 v-26 a30 30 0 0 1 60 0 v26 z"/><text class="mono acc-t" x="228" y="256" text-anchor="middle">じぶん</text></g>
+        <g class="beat" data-b="5"><rect class="soft-fill" x="288" y="96" width="126" height="72" rx="12"/><rect class="ink" x="288" y="96" width="126" height="72" rx="12"/><polygon class="soft-fill" points="288,150 288,180 268,158"/><text x="351" y="130" text-anchor="middle">感じたこと</text><text class="mono mut" x="351" y="152" text-anchor="middle">＝じぶんの話</text></g>
+      </svg>
+      <figcaption class="beat" data-b="6">体験だけが、他人には真似できない材料になる。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 06 STEP3 名簿 ===== -->
+<section class="scene" data-name="STEP3 名簿を書く" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="step-no beat" data-b="1"><b>03</b> STEP</p>
+      <h2 class="beat" data-b="1">名簿を書く</h2>
+      <p class="eli5 beat" data-b="1">あたまで選ばずに、<em>思い出した人をぜんぶ</em>書く。</p>
+      <p class="note beat" data-b="5">「この人はきっとムリ」を決めるのは自分ではありません。名前・連絡先・最後に会った日。まずは30人、書けたら100人。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="思い出した名前を点として書き出した並び。そのうち誰が動くかは書き出す前には分からないことを示す図">
+        <g class="beat" data-b="2"><circle class="soft-fill" cx="105" cy="60" r="5"/><circle class="soft-fill" cx="131" cy="60" r="5"/><circle class="soft-fill" cx="157" cy="60" r="5"/><circle class="soft-fill" cx="183" cy="60" r="5"/><circle class="soft-fill" cx="209" cy="60" r="5"/><circle class="soft-fill" cx="235" cy="60" r="5"/><circle class="soft-fill" cx="261" cy="60" r="5"/><circle class="soft-fill" cx="287" cy="60" r="5"/><circle class="soft-fill" cx="313" cy="60" r="5"/><circle class="soft-fill" cx="339" cy="60" r="5"/><circle class="soft-fill" cx="105" cy="86" r="5"/><circle class="soft-fill" cx="131" cy="86" r="5"/><circle class="soft-fill" cx="157" cy="86" r="5"/><circle class="soft-fill" cx="183" cy="86" r="5"/><circle class="soft-fill" cx="209" cy="86" r="5"/><circle class="soft-fill" cx="235" cy="86" r="5"/><circle class="soft-fill" cx="261" cy="86" r="5"/><circle class="soft-fill" cx="287" cy="86" r="5"/><circle class="soft-fill" cx="313" cy="86" r="5"/><circle class="soft-fill" cx="339" cy="86" r="5"/><circle class="soft-fill" cx="105" cy="112" r="5"/><circle class="soft-fill" cx="131" cy="112" r="5"/><circle class="soft-fill" cx="157" cy="112" r="5"/><circle class="soft-fill" cx="183" cy="112" r="5"/><circle class="soft-fill" cx="209" cy="112" r="5"/><circle class="soft-fill" cx="235" cy="112" r="5"/><circle class="soft-fill" cx="261" cy="112" r="5"/><circle class="soft-fill" cx="287" cy="112" r="5"/><circle class="soft-fill" cx="313" cy="112" r="5"/><circle class="soft-fill" cx="339" cy="112" r="5"/><circle class="soft-fill" cx="105" cy="138" r="5"/><circle class="soft-fill" cx="131" cy="138" r="5"/><circle class="soft-fill" cx="157" cy="138" r="5"/><circle class="soft-fill" cx="183" cy="138" r="5"/><circle class="soft-fill" cx="209" cy="138" r="5"/><circle class="soft-fill" cx="235" cy="138" r="5"/><circle class="soft-fill" cx="261" cy="138" r="5"/><circle class="soft-fill" cx="287" cy="138" r="5"/><circle class="soft-fill" cx="313" cy="138" r="5"/><circle class="soft-fill" cx="339" cy="138" r="5"/><circle class="soft-fill" cx="105" cy="164" r="5"/><circle class="soft-fill" cx="131" cy="164" r="5"/><circle class="soft-fill" cx="157" cy="164" r="5"/><circle class="soft-fill" cx="183" cy="164" r="5"/><circle class="soft-fill" cx="209" cy="164" r="5"/><circle class="soft-fill" cx="235" cy="164" r="5"/><circle class="soft-fill" cx="261" cy="164" r="5"/><circle class="soft-fill" cx="287" cy="164" r="5"/><circle class="soft-fill" cx="313" cy="164" r="5"/><circle class="soft-fill" cx="339" cy="164" r="5"/><circle class="soft-fill" cx="105" cy="190" r="5"/><circle class="soft-fill" cx="131" cy="190" r="5"/><circle class="soft-fill" cx="157" cy="190" r="5"/><circle class="soft-fill" cx="183" cy="190" r="5"/><circle class="soft-fill" cx="209" cy="190" r="5"/><circle class="soft-fill" cx="235" cy="190" r="5"/><circle class="soft-fill" cx="261" cy="190" r="5"/><circle class="soft-fill" cx="287" cy="190" r="5"/><circle class="soft-fill" cx="313" cy="190" r="5"/><circle class="soft-fill" cx="339" cy="190" r="5"/><circle class="soft-fill" cx="105" cy="216" r="5"/><circle class="soft-fill" cx="131" cy="216" r="5"/><circle class="soft-fill" cx="157" cy="216" r="5"/><circle class="soft-fill" cx="183" cy="216" r="5"/><circle class="soft-fill" cx="209" cy="216" r="5"/><circle class="soft-fill" cx="235" cy="216" r="5"/><circle class="soft-fill" cx="261" cy="216" r="5"/><circle class="soft-fill" cx="287" cy="216" r="5"/><circle class="soft-fill" cx="313" cy="216" r="5"/><circle class="soft-fill" cx="339" cy="216" r="5"/><circle class="soft-fill" cx="105" cy="242" r="5"/><circle class="soft-fill" cx="131" cy="242" r="5"/><circle class="soft-fill" cx="157" cy="242" r="5"/><circle class="soft-fill" cx="183" cy="242" r="5"/><circle class="soft-fill" cx="209" cy="242" r="5"/><circle class="soft-fill" cx="235" cy="242" r="5"/><circle class="soft-fill" cx="261" cy="242" r="5"/><circle class="soft-fill" cx="287" cy="242" r="5"/><circle class="soft-fill" cx="313" cy="242" r="5"/><circle class="soft-fill" cx="339" cy="242" r="5"/></g>
+        <g class="beat" data-b="3" data-anim="grow"><circle class="acc-fill" cx="261" cy="60" r="6.5"/><circle class="acc-fill" cx="339" cy="60" r="6.5"/><circle class="acc-fill" cx="157" cy="86" r="6.5"/><circle class="acc-fill" cx="339" cy="86" r="6.5"/><circle class="acc-fill" cx="131" cy="164" r="6.5"/><circle class="acc-fill" cx="105" cy="190" r="6.5"/><circle class="acc-fill" cx="313" cy="216" r="6.5"/></g>
+        <g class="beat" data-b="4"><text class="mono acc-t" x="220" y="290" text-anchor="middle">だれが動くかは、書き出すまで分からない</text></g>
+      </svg>
+      <figcaption class="beat" data-b="5">選別は相手の仕事。書き出すのが自分の仕事。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 07 STEP4 約束 ===== -->
+<section class="scene" data-name="STEP4 会う約束をする" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="step-no beat" data-b="1"><b>04</b> STEP</p>
+      <h2 class="beat" data-b="1">会う約束をする</h2>
+      <p class="eli5 beat" data-b="1">電話では、<em>説明しない</em>。</p>
+      <p class="note beat" data-b="6">電話ですることは、会う日を決めることだけ。長くて3分。ただし、仕事の話であることは電話の時点で先に伝えます（次のページの①）。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="電話は日程を決めるだけで、説明は会ってから行う図">
+        <g class="beat" data-b="2"><rect class="soft-fill" x="34" y="86" width="76" height="128" rx="12"/><rect class="ink" x="34" y="86" width="76" height="128" rx="12"/><line class="soft" x1="52" y1="108" x2="92" y2="108"/><text class="mono mut" x="72" y="240" text-anchor="middle">電話 3分</text></g>
+        <g class="beat" data-b="3"><path class="ink" d="M126 130 q18 20 0 40"/><path class="ink" d="M144 116 q30 34 0 68"/></g>
+        <g class="beat" data-b="4"><rect class="soft-fill" x="206" y="72" width="196" height="150" rx="6"/><rect class="ink" x="206" y="72" width="196" height="150" rx="6"/><line class="ink" x1="206" y1="106" x2="402" y2="106"/><g class="soft"><line x1="255" y1="106" x2="255" y2="222"/><line x1="304" y1="106" x2="304" y2="222"/><line x1="353" y1="106" x2="353" y2="222"/><line x1="206" y1="164" x2="402" y2="164"/></g></g>
+        <g class="beat" data-b="5" data-anim="grow"><circle class="wash" cx="329" cy="193" r="22"/><circle class="acc" cx="329" cy="193" r="22"/><text class="mono acc-t" x="329" y="264" text-anchor="middle">◯日 19:00 に会う</text></g>
+      </svg>
+      <figcaption class="beat" data-b="6">電話の目的は、説得ではなく日程。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 08 STEP5 伝える ===== -->
+<section class="scene" data-name="STEP5 伝える順番" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="step-no beat" data-b="1"><b>05</b> STEP</p>
+      <h2 class="beat" data-b="1">伝える順番</h2>
+      <p class="eli5 beat" data-b="1">じぶんの話 → 会社と製品 → しくみ → <em>つぎの一歩</em>。</p>
+      <p class="note beat" data-b="7">順番は入れかえない。しくみの話から始めると、相手は身構えます。そして最後は必ず「つぎに何をするか」で終える。ここを言わずに解散すると、話は消えます。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="話す順番を四つの箱で示し、最後が次の一歩で終わることを示す図">
+        <g class="beat" data-b="2"><rect class="soft-fill" x="6" y="112" width="88" height="76" rx="4"/><rect class="ink" x="6" y="112" width="88" height="76" rx="4"/><text class="mono mut" x="50" y="142" text-anchor="middle">1</text><text x="50" y="166" text-anchor="middle" font-size="12">じぶん</text></g>
+        <g class="beat" data-b="3"><line class="ink" x1="98" y1="150" x2="108" y2="150"/><polygon class="ink-fill" points="106,144 118,150 106,156"/><rect class="soft-fill" x="120" y="112" width="88" height="76" rx="4"/><rect class="ink" x="120" y="112" width="88" height="76" rx="4"/><text class="mono mut" x="164" y="142" text-anchor="middle">2</text><text x="164" y="166" text-anchor="middle" font-size="12">会社と製品</text></g>
+        <g class="beat" data-b="4"><line class="ink" x1="212" y1="150" x2="222" y2="150"/><polygon class="ink-fill" points="220,144 232,150 220,156"/><rect class="soft-fill" x="234" y="112" width="88" height="76" rx="4"/><rect class="ink" x="234" y="112" width="88" height="76" rx="4"/><text class="mono mut" x="278" y="142" text-anchor="middle">3</text><text x="278" y="166" text-anchor="middle" font-size="12">しくみ</text></g>
+        <g class="beat" data-b="5"><line class="acc" x1="326" y1="150" x2="336" y2="150"/><polygon class="acc-fill" points="334,144 346,150 334,156"/><rect class="wash" x="348" y="112" width="88" height="76" rx="4"/><rect class="acc" x="348" y="112" width="88" height="76" rx="4"/><text class="mono acc-t" x="392" y="142" text-anchor="middle">4</text><text class="acc-t" x="392" y="166" text-anchor="middle" font-size="12">つぎの一歩</text></g>
+        <g class="beat" data-b="6"><line class="soft" x1="6" y1="216" x2="436" y2="216"/><text class="mono mut" x="6" y="240">この順番を、入れかえない</text><text class="mono acc-t" x="436" y="240" text-anchor="end">必ず「つぎの一歩」で終える</text></g>
+      </svg>
+      <figcaption class="beat" data-b="7">最後の箱が抜けた話は、その場で終わってしまう。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 09 STEP6 フォロー ===== -->
+<section class="scene" data-name="STEP6 フォローする" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="step-no beat" data-b="1"><b>06</b> STEP</p>
+      <h2 class="beat" data-b="1">フォローする</h2>
+      <p class="eli5 beat" data-b="1">会ったら、<em>48時間以内</em>にもう一度。</p>
+      <p class="note beat" data-b="7">人は2日で細かいところを忘れます。忘れる前にもう一度会う。ただし、返事は急がせない。待つことも仕事のうちです。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="会った日、48時間以内、1週間後という三つの接点を並べた時間軸の図">
+        <g class="beat" data-b="2"><line class="ink" x1="40" y1="160" x2="400" y2="160" data-anim="draw"/><polygon class="ink-fill" points="398,153 414,160 398,167"/></g>
+        <g class="beat" data-b="3"><circle class="ink-fill" cx="62" cy="160" r="8"/><text class="mono mut" x="62" y="196" text-anchor="middle">会った日</text></g>
+        <g class="beat" data-b="4" data-anim="grow"><circle class="acc-fill" cx="196" cy="160" r="12"/><text class="mono acc-t" x="196" y="196" text-anchor="middle">48時間以内</text><text class="mono acc-t" x="196" y="128" text-anchor="middle">もう一度会う</text></g>
+        <g class="beat" data-b="5"><circle class="ink-fill" cx="352" cy="160" r="8"/><text class="mono mut" x="352" y="196" text-anchor="middle">1週間後</text></g>
+        <g class="beat" data-b="6"><text class="mono sig-t" x="220" y="256" text-anchor="middle">返事は急がせない</text></g>
+      </svg>
+      <figcaption class="beat" data-b="7">熱が冷めるより先に、二度目の接点を置く。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 10 STEP7 ABC ===== -->
+<section class="scene" data-name="STEP7 ひとりでやらない" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="step-no beat" data-b="1"><b>07</b> STEP</p>
+      <h2 class="beat" data-b="1">ひとりでやらない</h2>
+      <p class="eli5 beat" data-b="1">A＝先輩、B＝じぶん、C＝相手。<em>自分は橋</em>。</p>
+      <p class="note beat" data-b="6">むずかしい質問は、自分で抱えずに先輩へ渡す。答えられないことは「分かる人に聞きます」でかまいません。最初の3か月は、毎回だれかと一緒に。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="先輩と相手のあいだに自分が橋として立つABCの図">
+        <g class="beat" data-b="2" data-anim="grow"><circle class="soft-fill" cx="220" cy="70" r="36"/><circle class="ink" cx="220" cy="70" r="36"/><text class="big" x="220" y="78" text-anchor="middle">A</text><text class="mono mut" x="220" y="26" text-anchor="middle">先輩</text></g>
+        <g class="beat" data-b="3" data-anim="grow"><circle class="soft-fill" cx="360" cy="222" r="36"/><circle class="ink" cx="360" cy="222" r="36"/><text class="big" x="360" y="230" text-anchor="middle">C</text><text class="mono mut" x="360" y="284" text-anchor="middle">相手</text></g>
+        <g class="beat" data-b="4" data-anim="grow"><circle class="wash" cx="80" cy="222" r="36"/><circle class="acc" cx="80" cy="222" r="36"/><text class="big acc-t" x="80" y="230" text-anchor="middle">B</text><text class="mono acc-t" x="80" y="284" text-anchor="middle">じぶん</text></g>
+        <g class="beat" data-b="5"><line class="acc" x1="110" y1="200" x2="192" y2="94"/><line class="acc" x1="118" y1="222" x2="322" y2="222"/><text class="mono acc-t" x="220" y="204" text-anchor="middle">つなぐ</text></g>
+      </svg>
+      <figcaption class="beat" data-b="6">Bの役目は説得ではなく、AとCを会わせること。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 11 リズム ===== -->
+<section class="scene" data-name="つづけるリズム" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="eyebrow beat" data-b="1">Rhythm</p>
+      <h2 class="beat" data-b="1">つづけるリズム</h2>
+      <p class="eli5 beat" data-b="1">毎日15分、週に1回の勉強会。<em>切らさない</em>。</p>
+      <p class="note beat" data-b="6">まとめて5時間より、毎日15分。予定は空いた時間に入れるのではなく、先にカレンダーへ入れてしまう。</p>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="一週間の枠に毎日の15分と週一回の勉強会を置いた図">
+        <g class="beat" data-b="2">
+          <rect class="soft-fill" x="20" y="96" width="52" height="52"/><rect class="soft" x="20" y="96" width="52" height="52"/>
+          <rect class="soft-fill" x="80" y="96" width="52" height="52"/><rect class="soft" x="80" y="96" width="52" height="52"/>
+          <rect class="soft-fill" x="140" y="96" width="52" height="52"/><rect class="soft" x="140" y="96" width="52" height="52"/>
+          <rect class="soft-fill" x="200" y="96" width="52" height="52"/><rect class="soft" x="200" y="96" width="52" height="52"/>
+          <rect class="soft-fill" x="260" y="96" width="52" height="52"/><rect class="soft" x="260" y="96" width="52" height="52"/>
+          <rect class="soft-fill" x="320" y="96" width="52" height="52"/><rect class="soft" x="320" y="96" width="52" height="52"/>
+          <rect class="soft-fill" x="380" y="96" width="52" height="52"/><rect class="soft" x="380" y="96" width="52" height="52"/>
+          <text class="mono mut" x="20" y="82">月</text><text class="mono mut" x="80" y="82">火</text><text class="mono mut" x="140" y="82">水</text><text class="mono mut" x="200" y="82">木</text><text class="mono mut" x="260" y="82">金</text><text class="mono mut" x="320" y="82">土</text><text class="mono mut" x="380" y="82">日</text>
+        </g>
+        <g class="beat" data-b="3">
+          <circle class="acc-fill" cx="46" cy="122" r="7"/><circle class="acc-fill" cx="106" cy="122" r="7"/><circle class="acc-fill" cx="166" cy="122" r="7"/>
+          <circle class="acc-fill" cx="226" cy="122" r="7"/><circle class="acc-fill" cx="286" cy="122" r="7"/><circle class="acc-fill" cx="346" cy="122" r="7"/><circle class="acc-fill" cx="406" cy="122" r="7"/>
+          <text class="mono acc-t" x="226" y="182" text-anchor="middle">毎日15分</text>
+        </g>
+        <g class="beat" data-b="4"><rect class="wash-sig" x="256" y="92" width="60" height="60"/><rect class="sig" x="256" y="92" width="60" height="60"/><text class="mono sig-t" x="286" y="222" text-anchor="middle">週1回の勉強会</text></g>
+        <g class="beat" data-b="5"><line class="soft" x1="20" y1="262" x2="432" y2="262"/><text class="mono mut" x="20" y="286">今週</text><text class="mono mut" x="432" y="286" text-anchor="end">来週へ</text></g>
+      </svg>
+      <figcaption class="beat" data-b="6">量よりも、切らさないこと。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 12 ルール ===== -->
+<section class="scene" data-name="守るルール" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="eyebrow beat" data-b="1">Rules</p>
+      <h2 class="beat" data-b="1">かならず守ること</h2>
+      <p class="eli5 beat" data-b="1">言い切らない。かくさない。<em>急がせない</em>。</p>
+      <ul class="rows">
+        <li class="beat" data-b="2"><span class="n">1</span><span>会う前に名乗る。氏名・会社名・仕事の話であること・扱う商品を、先に伝える。<span class="law">特定商取引法 33条の2</span></span></li>
+        <li class="beat" data-b="3"><span class="n">2</span><span>書面をわたす。概要書面と契約書面。読む時間をつくる。<span class="law">同 37条</span></span></li>
+        <li class="beat" data-b="4"><span class="n">3</span><span>20日間はやめられる。契約書面を受け取った日から20日はクーリング・オフ。<span class="law">同 40条</span></span></li>
+        <li class="beat" data-b="5"><span class="n">4</span><span>言い切らない。「治る」「必ず稼げる」は言わない。<span class="law">医薬品医療機器等法 / 特定商取引法</span></span></li>
+      </ul>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="名乗る・書面・二十日間・言い切らない、という四つのルールを盾で示した図">
+        <g class="beat" data-b="2" data-anim="grow"><g transform="translate(56,28)"><path class="wash" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><path class="acc" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><text class="mono acc-t" x="54" y="52" text-anchor="middle">名乗る</text></g></g>
+        <g class="beat" data-b="3" data-anim="grow"><g transform="translate(240,28)"><path class="wash" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><path class="acc" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><text class="mono acc-t" x="54" y="52" text-anchor="middle">書面</text></g></g>
+        <g class="beat" data-b="4" data-anim="grow"><g transform="translate(56,166)"><path class="wash" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><path class="acc" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><text class="mono acc-t" x="54" y="52" text-anchor="middle">20日間</text></g></g>
+        <g class="beat" data-b="5" data-anim="grow"><g transform="translate(240,166)"><path class="wash-sig" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><path class="sig" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><text class="mono sig-t" x="54" y="46" text-anchor="middle">言い切ら</text><text class="mono sig-t" x="54" y="64" text-anchor="middle">ない</text></g></g>
+      </svg>
+      <figcaption class="beat" data-b="6">守るほど話が通る。破ると、全部が止まる。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== 13 今日やる3つ ===== -->
+<section class="scene" data-name="今日やる3つ" aria-hidden="true">
+  <div class="scene-in">
+    <div class="txt">
+      <p class="eyebrow beat" data-b="1">Today</p>
+      <h2 class="beat" data-b="1">今日やる、3つ</h2>
+      <p class="eli5 beat" data-b="1">ここまでを、<em>今日のうちに</em>。</p>
+      <ul class="rows">
+        <li class="beat" data-b="2"><span class="n">1</span><span>目的を1行、紙に書く。期限も書く。</span></li>
+        <li class="beat" data-b="3"><span class="n">2</span><span>自分が使う製品を、今日から使いはじめる。</span></li>
+        <li class="beat" data-b="4"><span class="n">3</span><span>名簿を30人ぶん書き出す。選ばずに書く。</span></li>
+      </ul>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="三つのチェック項目に順にチェックが入り、今日中と押される図">
+        <g class="beat" data-b="2"><rect class="ink" x="40" y="48" width="30" height="30" rx="3"/><polyline class="acc" points="46,64 55,73 72,50" data-anim="draw"/><line class="soft" x1="90" y1="78" x2="400" y2="78"/><text x="90" y="70">目的を1行</text></g>
+        <g class="beat" data-b="3"><rect class="ink" x="40" y="118" width="30" height="30" rx="3"/><polyline class="acc" points="46,134 55,143 72,120" data-anim="draw"/><line class="soft" x1="90" y1="148" x2="400" y2="148"/><text x="90" y="140">今日から使う</text></g>
+        <g class="beat" data-b="4"><rect class="ink" x="40" y="188" width="30" height="30" rx="3"/><polyline class="acc" points="46,204 55,213 72,190" data-anim="draw"/><line class="soft" x1="90" y1="218" x2="400" y2="218"/><text x="90" y="210">名簿30人</text></g>
+        <g class="beat" data-b="5" data-anim="grow"><g transform="rotate(-8 320 262)"><rect class="wash-sig" x="248" y="238" width="144" height="46" rx="4"/><rect class="sig" x="248" y="238" width="144" height="46" rx="4"/><text class="mono sig-t" x="320" y="267" text-anchor="middle">今日中に</text></g></g>
+      </svg>
+      <figcaption class="beat" data-b="6">3つ終われば、第一歩は完了。</figcaption>
+    </figure>
+  </div>
+</section>
+
+  </div><!-- /stage -->
+
+  <p class="hint" id="hint">クリック / → で次へ　←で戻る　A 自動再生　T 尺</p>
+
+  <div class="hud" id="hud">
+    <div class="hud-l"><span class="idx" id="idx">01 / 13</span> <span class="nm" id="nm">タイトル</span></div>
+    <div class="rail" id="rail"></div>
+    <div class="hud-r">
+      <span class="len" id="len"></span>
+      <button class="btn" id="autoBtn" type="button" aria-pressed="false">自動再生</button>
+      <button class="btn" id="sheetBtn" type="button" aria-expanded="false">尺</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet" hidden>
+    <button class="btn close" id="closeBtn" type="button">閉じる</button>
+    <h3>尺（実測）</h3>
+    <p>各シーンの「拍」は、実際にブラウザで再生して計測した実測値です（Chromium／2回再生の短いほう）。読む間は各シーンに一律2.0秒を足しています。</p>
+    <table>
+      <thead><tr><th>シーン</th><th>拍</th><th>読む間</th><th>尺</th><th>累計</th></tr></thead>
+      <tbody id="sheetBody"></tbody>
+      <tfoot><tr><td>合計</td><td id="sumBeats"></td><td id="sumRead"></td><td id="sumLen"></td><td></td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var READ_MS = 2000;                 // 各シーンの「読む間」
+  var GAP_MS  = 140;                  // 拍と拍のあいだ
+  var DUR = { rise:460, grow:420, draw:640 };
+  var EASE = "cubic-bezier(.22,.61,.36,1)";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // 実測値：Chromium(headless, 1440x900) で全シーンを2回再生し、各シーンの短いほうを採用。
+  // 再計測は tools/measure-fst.js で行い、この配列を差し替える。単位ミリ秒（拍のみ／読む間は含まない）。
+  var MEASURED = [3707, 3599, 3615, 3165, 3599, 2982, 3581, 4199, 4348, 3499, 3599, 3615, 4116];
+
+  var scenes = Array.prototype.slice.call(document.querySelectorAll(".scene"));
+  var live = new Array(scenes.length);
+  var cur = -1, token = 0, running = false, auto = false, autoTimer = null;
+
+  var idxEl = document.getElementById("idx");
+  var nmEl = document.getElementById("nm");
+  var lenEl = document.getElementById("len");
+  var railEl = document.getElementById("rail");
+  var autoBtn = document.getElementById("autoBtn");
+  var sheetBtn = document.getElementById("sheetBtn");
+  var sheet = document.getElementById("sheet");
+  var closeBtn = document.getElementById("closeBtn");
+
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+  function secs(ms){ return (Math.round(ms / 100) / 10).toFixed(1); }
+
+  function beatsOf(scene){
+    var map = {}, order = [];
+    Array.prototype.forEach.call(scene.querySelectorAll(".beat"), function(el){
+      var b = parseInt(el.getAttribute("data-b") || "1", 10);
+      if (!map[b]) { map[b] = []; order.push(b); }
+      map[b].push(el);
+    });
+    order.sort(function(a, b){ return a - b; });
+    return order.map(function(b){ return map[b]; });
+  }
+
+  // data-anim は拍そのものにも、その中の線にも書ける
+  function drawTargets(el){
+    if (el.getAttribute("data-anim") === "draw") return [el];
+    return Array.prototype.slice.call(el.querySelectorAll('[data-anim="draw"]'));
+  }
+
+  function playEl(el){
+    var kind = el.getAttribute("data-anim") || "rise";
+    var base = DUR[kind] || DUR.rise;
+    var dur  = reduce ? 1 : (parseInt(el.getAttribute("data-dur") || "0", 10) || base);
+    var anims = [];
+
+    if (kind !== "draw") {
+      var from = (kind === "grow")
+        ? { opacity:0, transform:"scale(.88)" }
+        : { opacity:0, transform:"translateY(10px)" };
+      var to = { opacity:1, transform:"none" };
+      anims.push(el.animate([from, to], { duration:dur, easing:EASE, fill:"both" }));
+    }
+
+    drawTargets(el).forEach(function(p){
+      var len = 0;
+      try { len = p.getTotalLength(); } catch (e) { len = 0; }
+      if (!len) return;
+      p.style.strokeDasharray = len + " " + len;
+      anims.push(p.animate(
+        [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+        { duration: reduce ? 1 : Math.max(dur, DUR.draw), easing: EASE, fill:"both" }
+      ));
+      if (kind === "draw") {
+        anims.push(el.animate([{ opacity:0 }, { opacity:1 }], { duration:1, fill:"both" }));
+      }
+    });
+
+    if (!anims.length) { el.classList.add("on"); return Promise.resolve(); }
+
+    return Promise.all(anims.map(function(a){ return a.finished.catch(function(){}); })).then(function(){
+      settle(el);
+    });
+  }
+
+  function settle(el){
+    el.classList.add("on");
+    var all = [el].concat(Array.prototype.slice.call(el.querySelectorAll("*")));
+    all.forEach(function(n){
+      if (n.getAnimations) n.getAnimations().forEach(function(a){ try { a.cancel(); } catch (e) {} });
+      if (n.style && n.style.strokeDasharray) { n.style.strokeDasharray = "none"; n.style.strokeDashoffset = "0"; }
+    });
+  }
+
+  function resetScene(scene){
+    Array.prototype.forEach.call(scene.querySelectorAll(".beat"), function(el){
+      var all = [el].concat(Array.prototype.slice.call(el.querySelectorAll("*")));
+      all.forEach(function(n){
+        if (n.getAnimations) n.getAnimations().forEach(function(a){ try { a.cancel(); } catch (e) {} });
+        if (n.style) { n.style.strokeDasharray = ""; n.style.strokeDashoffset = ""; }
+      });
+      el.classList.remove("on");
+    });
+  }
+
+  function revealAll(scene){
+    Array.prototype.forEach.call(scene.querySelectorAll(".beat"), function(el){ settle(el); });
+  }
+
+  function plannedBeats(i){
+    if (MEASURED && MEASURED[i] != null) return MEASURED[i];
+    if (live[i] != null) return live[i];
+    return null;
+  }
+
+  function updateHud(){
+    var i = Math.max(cur, 0);
+    idxEl.textContent = pad(i + 1) + " / " + pad(scenes.length);
+    nmEl.textContent = scenes[i].getAttribute("data-name") || "";
+    var b = plannedBeats(i);
+    lenEl.innerHTML = b == null
+      ? "尺 <small>計測待ち</small>"
+      : "尺 " + secs(b + READ_MS) + "s <small>（拍 " + secs(b) + " ＋ 読む間 2.0）</small>";
+    Array.prototype.forEach.call(railEl.children, function(d, n){
+      d.setAttribute("aria-current", n === i ? "true" : "false");
+      if (n < i) d.classList.add("seen"); else d.classList.remove("seen");
+    });
+  }
+
+  function scheduleAuto(){
+    clearTimeout(autoTimer);
+    if (!auto || cur >= scenes.length - 1) return;
+    autoTimer = setTimeout(function(){ go(cur + 1); }, READ_MS);
+  }
+
+  function go(i, opts){
+    opts = opts || {};
+    i = Math.max(0, Math.min(scenes.length - 1, i));
+    var my = ++token;
+    clearTimeout(autoTimer);
+
+    if (cur >= 0 && cur !== i) {
+      scenes[cur].classList.remove("is-live");
+      scenes[cur].setAttribute("aria-hidden", "true");
+      resetScene(scenes[cur]);
+    }
+    cur = i;
+    var sc = scenes[i];
+    resetScene(sc);
+    sc.classList.add("is-live");
+    sc.setAttribute("aria-hidden", "false");
+    updateHud();
+    if (location.hash !== "#" + (i + 1)) history.replaceState(null, "", "#" + (i + 1));
+
+    if (opts.instant || reduce) {
+      revealAll(sc);
+      live[i] = live[i] == null ? 0 : live[i];
+      running = false;
+      updateHud();
+      scheduleAuto();
+      return Promise.resolve();
+    }
+
+    running = true;
+    var t0 = performance.now();
+    var groups = beatsOf(sc);
+    var chain = Promise.resolve();
+    groups.forEach(function(g){
+      chain = chain.then(function(){
+        if (my !== token) return;
+        return Promise.all(g.map(playEl)).then(function(){
+          if (my !== token) return;
+          return sleep(GAP_MS);
+        });
+      });
+    });
+    return chain.then(function(){
+      if (my !== token) return;
+      running = false;
+      live[i] = performance.now() - t0;
+      updateHud();
+      scheduleAuto();
+    });
+  }
+
+  function next(){
+    if (running) { token++; running = false; revealAll(scenes[cur]); updateHud(); scheduleAuto(); return; }
+    if (cur < scenes.length - 1) go(cur + 1);
+  }
+  function prev(){ if (cur > 0) go(cur - 1); }
+
+  // rail
+  scenes.forEach(function(sc, i){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "dot";
+    b.setAttribute("data-i", i);
+    b.setAttribute("aria-label", (i + 1) + ". " + (sc.getAttribute("data-name") || ""));
+    b.addEventListener("click", function(ev){ ev.stopPropagation(); go(i); });
+    railEl.appendChild(b);
+  });
+
+  // timing sheet
+  function fillSheet(){
+    var body = document.getElementById("sheetBody");
+    body.innerHTML = "";
+    var sumB = 0, cum = 0, known = true;
+    scenes.forEach(function(sc, i){
+      var b = plannedBeats(i);
+      if (b == null) { known = false; b = 0; }
+      sumB += b; cum += b + READ_MS;
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + pad(i + 1) + " " + (sc.getAttribute("data-name") || "") + "</td>" +
+                     "<td>" + secs(b) + "s</td><td>2.0s</td><td>" + secs(b + READ_MS) + "s</td><td>" + secs(cum) + "s</td>";
+      body.appendChild(tr);
+    });
+    document.getElementById("sumBeats").textContent = secs(sumB) + "s";
+    document.getElementById("sumRead").textContent = secs(READ_MS * scenes.length) + "s";
+    document.getElementById("sumLen").textContent = secs(sumB + READ_MS * scenes.length) + "s"
+      + (known ? "" : "（未計測あり）");
+  }
+  function toggleSheet(on){
+    var show = on == null ? sheet.hidden : on;
+    if (show) fillSheet();
+    sheet.hidden = !show;
+    sheetBtn.setAttribute("aria-expanded", show ? "true" : "false");
+  }
+
+  sheetBtn.addEventListener("click", function(ev){ ev.stopPropagation(); toggleSheet(); });
+  closeBtn.addEventListener("click", function(ev){ ev.stopPropagation(); toggleSheet(false); });
+  sheet.addEventListener("click", function(ev){ ev.stopPropagation(); });
+  document.getElementById("hud").addEventListener("click", function(ev){ ev.stopPropagation(); });
+  autoBtn.addEventListener("click", function(ev){
+    ev.stopPropagation();
+    auto = !auto;
+    autoBtn.setAttribute("aria-pressed", auto ? "true" : "false");
+    if (auto && !running) scheduleAuto(); else clearTimeout(autoTimer);
+  });
+
+  document.getElementById("deck").addEventListener("click", function(){ next(); });
+  document.addEventListener("keydown", function(ev){
+    var k = ev.key;
+    if (k === "ArrowRight" || k === " " || k === "Enter" || k === "PageDown") { ev.preventDefault(); next(); }
+    else if (k === "ArrowLeft" || k === "PageUp") { ev.preventDefault(); prev(); }
+    else if (k === "Home") { go(0); }
+    else if (k === "End") { go(scenes.length - 1); }
+    else if (k === "a" || k === "A") { autoBtn.click(); }
+    else if (k === "t" || k === "T") { toggleSheet(); }
+    else if (k === "Escape") { toggleSheet(false); }
+  });
+
+  // 計測用フック（ヘッドレスから呼ぶ）
+  window.__fstMeasure = function(){
+    var wasAuto = auto; auto = false;
+    var out = [];
+    var chain = Promise.resolve();
+    scenes.forEach(function(sc, i){
+      chain = chain.then(function(){
+        return go(i).then(function(){ out.push(Math.round(live[i] || 0)); });
+      });
+    });
+    return chain.then(function(){ auto = wasAuto; return out; });
+  };
+  window.__fstScenes = scenes.map(function(sc){ return sc.getAttribute("data-name"); });
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
