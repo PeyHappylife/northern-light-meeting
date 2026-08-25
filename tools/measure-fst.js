@@ -3,8 +3,18 @@ const path = process.argv[2];
 const RUNS = parseInt(process.argv[3] || '3', 10);
 
 (async () => {
+  // Chromeの場所：CHROME_PATH で上書きできる。既定はmac標準のChrome / このリポジトリのCI環境。
+  const candidates = [
+    process.env.CHROME_PATH,
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
+  ].filter(Boolean);
+  const executablePath = candidates.find(p => { try { return require('fs').existsSync(p); } catch (e) { return false; } });
+  if (!executablePath) { console.error('Chromeが見つかりません。CHROME_PATH=... を指定してください。'); process.exit(1); }
+
   const browser = await chromium.launch({
-    executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    executablePath,
     args: ['--no-sandbox', '--disable-gpu', '--force-prefers-reduced-motion=false']
   });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
