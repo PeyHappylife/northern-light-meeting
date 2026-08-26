@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #0E6B62; } a:hover { color: #094F48; }
+  </style>
+</helmet>
+<div style="width: 1280px; height: 800px; background: #FFFFFF; background-image: linear-gradient(#EEF2F1 1px, transparent 1px), linear-gradient(90deg, #EEF2F1 1px, transparent 1px); background-size: 40px 40px; color: #14201C; font-family: 'Zen Kaku Gothic New', 'Hiragino Sans', sans-serif; display: flex; flex-direction: column; padding: 0; box-sizing: border-box">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 22px 64px; border-bottom: 2px solid #14201C; background: #FFFFFF">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; letter-spacing: 0.18em">FIRST STEP TRAINING</span>
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; letter-spacing: 0.18em; color: #0E6B62">STEP 01 / 07</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 160px minmax(0, 1fr) 380px; gap: 40px; align-items: start; padding: 56px 64px; flex-grow: 1">
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; border-right: 2px solid #14201C; padding-right: 24px; align-self: stretch">
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 96px; line-height: 1; font-weight: 500; color: #0E6B62">01</span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; letter-spacing: 0.2em; color: #5A6560">STEP</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 24px">
+      <h1 style="font-weight: 700; font-size: 46px; line-height: 1.35; margin: 0">目的を決める</h1>
+      <p style="font-size: 25px; line-height: 1.75; font-weight: 500; margin: 0; word-break: keep-all; border-left: 6px solid #0E6B62; padding-left: 18px">「なんのため？」を、紙に1行で書く。</p>
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <p style="font-size: 18px; line-height: 1.9; color: #3D4744; margin: 0"><span style="font-family: 'IBM Plex Mono', monospace; color: #0E6B62">01</span>　目的を1行で書く（例：健康診断の数値を戻す）</p>
+        <p style="font-size: 18px; line-height: 1.9; color: #3D4744; margin: 0"><span style="font-family: 'IBM Plex Mono', monospace; color: #0E6B62">02</span>　いつまでに、を並べて書く</p>
+        <p style="font-size: 18px; line-height: 1.9; color: #3D4744; margin: 0"><span style="font-family: 'IBM Plex Mono', monospace; color: #0E6B62">03</span>　見えるところに貼る</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; border: 2px solid #14201C; padding: 20px; background: #FFFFFF">
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.16em; color: #5A6560">FIG. 1</span>
+      <svg viewBox="0 0 300 260" role="img" aria-label="的の中心に矢が届き、期限が記された図" style="display: block; width: 100%; height: auto">
+        <circle cx="130" cy="130" r="96" fill="none" stroke="#14201C" stroke-width="2"/>
+        <circle cx="130" cy="130" r="60" fill="none" stroke="#14201C" stroke-width="2"/>
+        <circle cx="130" cy="130" r="26" fill="#0E6B62"/>
+        <line x1="284" y1="242" x2="148" y2="146" stroke="#14201C" stroke-width="2.5"/>
+        <polygon points="150,144 128,130 140,152" fill="#14201C"/>
+      </svg>
+      <p style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; line-height: 1.8; color: #3D4744; margin: 0">的＝目的<br>期限＝いつまでに</p>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #B45309; } a:hover { color: #8A3F06; }
+  :root {
+    --ground:#FFF7EC;
+    --surface:#FFFFFF;
+    --sunk:#FCE9CE;
+    --ink:#2A1D0C;
+    --muted:#6B563C;
+    --rule:#E8D9C2;
+    --leaf:#B45309;
+    --harvest:#0F766E;
+    --leaf-wash:rgba(217,119,6,.14);
+    --harvest-wash:rgba(15,118,110,.12);
+
+    --display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif;
+    --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",ui-monospace,monospace;
+  }
+  *,*::before,*::after {box-sizing:border-box}
+  body {
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--body); line-height:1.85;
+    -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+  }
+  /* ---------- scenes ---------- */   .scene {display:none; width:100%; max-width:66rem}
+  .scene.is-live {display:block}
+  .scene-in {
+    display:grid; grid-template-columns:minmax(0,0.92fr) minmax(0,1fr);
+    gap:clamp(1.4rem,4vw,3.4rem); align-items:center;
+  }
+  .scene--title .scene-in {grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:clamp(1.6rem,4vw,2.6rem)}
+  .scene--title .txt {max-width:34rem}
+  .scene--title figure {width:min(34rem,100%)}
+  @media (max-width:860px) {
+    .scene-in{grid-template-columns:minmax(0,1fr); gap:1.4rem}
+  }
+  .txt {display:flex; flex-direction:column; gap:.9rem; min-width:0}
+  .eyebrow {
+    margin:0; align-self:flex-start; font-family:var(--mono); font-size:.74rem; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--leaf);
+    background:var(--leaf-wash); border-radius:999px; padding:.28rem .95rem;
+  }
+  .step-no {
+    display:inline-flex; align-self:flex-start; align-items:baseline; gap:.5em;
+    font-family:var(--mono); font-size:.74rem; letter-spacing:.18em; color:var(--muted);
+    background:var(--leaf-wash); border-radius:999px; padding:.28rem 1rem .28rem .8rem;
+  }
+  .step-no b {font-size:1.6rem; font-weight:500; color:var(--leaf); letter-spacing:0}
+  h1 {
+    margin:0; font-family:var(--display); font-weight:700; line-height:1.36;
+    font-size:clamp(2rem,5.6vw,3.15rem); letter-spacing:.01em; text-wrap:balance;
+  }
+  h2 {
+    margin:0; font-family:var(--display); font-weight:700; line-height:1.42;
+    font-size:clamp(1.6rem,4.2vw,2.45rem); letter-spacing:.01em; text-wrap:balance;
+  }
+  .eli5 {
+    margin:0; font-family:var(--display); font-size:clamp(1.14rem,2.6vw,1.52rem);
+    font-weight:500; line-height:1.75;
+    text-wrap:balance; word-break:keep-all; overflow-wrap:anywhere;
+  }
+  .eli5 em {font-style:normal; color:var(--leaf); font-weight:700}
+  .note {margin:0; font-size:clamp(.95rem,1.8vw,1.08rem); line-height:1.95; color:var(--muted); max-width:32rem}
+  .lead {margin:0; font-size:clamp(1.02rem,2.2vw,1.24rem); line-height:1.95; color:var(--muted); max-width:30rem}
+  /* rule rows (used on the two list scenes) */   .rows {display:flex; flex-direction:column; gap:.55rem; margin:0; padding:0; list-style:none}
+  .rows li {
+    display:grid; grid-template-columns:1.7rem minmax(0,1fr); gap:.75rem; align-items:start;
+    font-size:clamp(.96rem,1.85vw,1.08rem); line-height:1.75;
+  }
+  .rows .n {
+    font-family:var(--mono); font-size:.8rem; color:var(--leaf);
+    background:var(--leaf-wash); border:0; border-radius:999px; text-align:center; line-height:1.7rem; height:1.7rem;
+  }
+  .rows .law {display:block; font-size:.8rem; color:var(--muted); font-family:var(--mono); letter-spacing:.02em}
+  figure {margin:0; display:flex; flex-direction:column; gap:.7rem; min-width:0}
+  figure svg {
+    display:block; width:100%; max-width:100%; height:auto;
+    background:var(--surface); border:1px solid var(--rule); border-radius:16px;
+    padding:.6rem;
+  }
+  figcaption {font-size:.9rem; color:var(--muted); line-height:1.8}
+  /* svg ink */   .ink {stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+  .ink-fill {fill:currentColor; stroke:none}
+  .soft {stroke:var(--rule); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  .soft-fill {fill:var(--sunk); stroke:none}
+  .acc {stroke:var(--leaf); fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round}
+  .acc-fill {fill:var(--leaf); stroke:none}
+  .sig {stroke:var(--harvest); fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round}
+  .sig-fill {fill:var(--harvest); stroke:none}
+  .wash {fill:var(--leaf-wash); stroke:none}
+  .wash-sig {fill:var(--harvest-wash); stroke:none}
+  text {font-family:var(--body); fill:currentColor; font-size:13px}
+  text.mono {font-family:var(--mono); font-size:11px; letter-spacing:.08em}
+  text.acc-t {fill:var(--leaf)}
+  text.sig-t {fill:var(--harvest)}
+  text.mut {fill:var(--muted)}
+  text.big {font-family:var(--display); font-size:23px; font-weight:700}
+  /* ---------- beats ---------- */   .beat {opacity:0}
+  .beat.on {opacity:1}
+  /* ---------- hud ---------- */   .hud {
+    position:fixed; left:0; right:0; bottom:0; z-index:5;
+    display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:1rem; align-items:center;
+    padding:.6rem clamp(.8rem,3vw,1.6rem);
+    background:color-mix(in srgb, var(--ground) 88%, transparent);
+    border-top:1px solid var(--rule);
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; color:var(--muted);
+    cursor:default;
+  }
+  /* ---------- timing sheet ---------- */   .sheet {
+    position:fixed; inset:auto 0 0 0; z-index:6; max-height:78dvh; overflow:auto;
+    background:var(--surface); border-top:1px solid var(--rule);
+    padding:clamp(1rem,3vw,1.8rem) clamp(1rem,4vw,2rem) 5rem; cursor:default;
+  }
+  .beat{opacity:1}
+  .slide{
+    width:1280px; background:var(--ground); color:var(--ink);
+    font-family:var(--body); line-height:1.85; display:flex; align-items:center;
+    padding:76px 88px 96px; box-sizing:border-box; position:relative;
+  }
+  .slide .scene-in{width:100%}
+  .slide--title .scene-in{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:34px}
+  .slide--title .txt{max-width:34rem}
+  .slide--title figure{width:544px}
+  .stamp{
+    position:absolute; left:88px; bottom:44px; font-family:var(--mono);
+    font-size:13px; letter-spacing:.14em; color:var(--muted);
+  }
+
+  </style>
+</helmet>
+<div class="slide" style="height: 900px">
+  <div class="scene-in">
+
+    <div class="txt">
+      <p class="eyebrow">Rules</p>
+      <h2>かならず守ること</h2>
+      <p class="eli5">言い切らない。かくさない。<em>急がせない</em>。</p>
+      <ul class="rows">
+        <li><span class="n">1</span><span>会う前に名乗る。氏名・会社名・仕事の話であること・扱う商品を、先に伝える。<span class="law">特定商取引法 33条の2</span></span></li>
+        <li><span class="n">2</span><span>書面をわたす。概要書面と契約書面。読む時間をつくる。<span class="law">同 37条</span></span></li>
+        <li><span class="n">3</span><span>20日間はやめられる。契約書面を受け取った日から20日はクーリング・オフ。<span class="law">同 40条</span></span></li>
+        <li><span class="n">4</span><span>言い切らない。「治る」「必ず稼げる」は言わない。<span class="law">医薬品医療機器等法 / 特定商取引法</span></span></li>
+      </ul>
+    </div>
+    <figure>
+      <svg viewBox="0 0 440 300" role="img" aria-label="名乗る・書面・二十日間・言い切らない、という四つのルールを盾で示した図">
+        <g><g transform="translate(56,28)"><path class="wash" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><path class="acc" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><text class="mono acc-t" x="54" y="52" text-anchor="middle">名乗る</text></g></g>
+        <g><g transform="translate(240,28)"><path class="wash" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><path class="acc" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><text class="mono acc-t" x="54" y="52" text-anchor="middle">書面</text></g></g>
+        <g><g transform="translate(56,166)"><path class="wash" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><path class="acc" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><text class="mono acc-t" x="54" y="52" text-anchor="middle">20日間</text></g></g>
+        <g><g transform="translate(240,166)"><path class="wash-sig" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><path class="sig" d="M0 0 h108 v58 q0 34 -54 52 q-54 -18 -54 -52 z"/><text class="mono sig-t" x="54" y="46" text-anchor="middle">言い切ら</text><text class="mono sig-t" x="54" y="64" text-anchor="middle">ない</text></g></g>
+      </svg>
+      <figcaption>守るほど話が通る。破ると、全部が止まる。</figcaption>
+    </figure>
+  
+  </div>
+  <span class="stamp">かならず守ること ／ 12 of 13</span>
+</div>
+</x-dc>
+</body>
+</html>
