@@ -1,38 +1,38 @@
 <title>ファーストステップ紙芝居</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 
 <style>
   :root{
-    --ground:#EDF1EA;
+    --ground:#FFF7EC;
     --surface:#FFFFFF;
-    --sunk:#E2E8DE;
-    --ink:#14201A;
-    --muted:#5A6A5E;
-    --rule:#C7D2C4;
-    --leaf:#2C6B45;
-    --harvest:#A9711B;
-    --leaf-wash:rgba(44,107,69,.10);
-    --harvest-wash:rgba(169,113,27,.12);
+    --sunk:#FCE9CE;
+    --ink:#2A1D0C;
+    --muted:#6B563C;
+    --rule:#E8D9C2;
+    --leaf:#B45309;
+    --harvest:#0F766E;
+    --leaf-wash:rgba(217,119,6,.14);
+    --harvest-wash:rgba(15,118,110,.12);
 
-    --display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+    --display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif;
     --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
     --mono:"IBM Plex Mono","SFMono-Regular",ui-monospace,monospace;
   }
   @media (prefers-color-scheme:dark){
     :root:not([data-theme="light"]){
-      --ground:#0D120F; --surface:#151C17; --sunk:#111814;
-      --ink:#E3EAE0; --muted:#93A395; --rule:#29352B;
-      --leaf:#7CC894; --harvest:#DFA654;
-      --leaf-wash:rgba(124,200,148,.13); --harvest-wash:rgba(223,166,84,.14);
+      --ground:#1B1305; --surface:#251B0B; --sunk:#2E2210;
+      --ink:#F6EADA; --muted:#B49A79; --rule:#3B2C16;
+      --leaf:#F0A94C; --harvest:#5FC7B4;
+      --leaf-wash:rgba(240,169,76,.15); --harvest-wash:rgba(95,199,180,.14);
     }
   }
   :root[data-theme="dark"]{
-    --ground:#0D120F; --surface:#151C17; --sunk:#111814;
-    --ink:#E3EAE0; --muted:#93A395; --rule:#29352B;
-    --leaf:#7CC894; --harvest:#DFA654;
-    --leaf-wash:rgba(124,200,148,.13); --harvest-wash:rgba(223,166,84,.14);
+    --ground:#1B1305; --surface:#251B0B; --sunk:#2E2210;
+    --ink:#F6EADA; --muted:#B49A79; --rule:#3B2C16;
+    --leaf:#F0A94C; --harvest:#5FC7B4;
+    --leaf-wash:rgba(240,169,76,.15); --harvest-wash:rgba(95,199,180,.14);
   }
 
   *,*::before,*::after{box-sizing:border-box}
@@ -63,58 +63,61 @@
 
   .txt{display:flex; flex-direction:column; gap:.9rem; min-width:0}
   .eyebrow{
-    margin:0; font-family:var(--mono); font-size:.72rem; letter-spacing:.2em;
+    margin:0; align-self:flex-start; font-family:var(--mono); font-size:.74rem; letter-spacing:.18em;
     text-transform:uppercase; color:var(--leaf);
+    background:var(--leaf-wash); border-radius:999px; padding:.28rem .95rem;
   }
   .step-no{
-    display:inline-flex; align-items:baseline; gap:.5em;
-    font-family:var(--mono); font-size:.72rem; letter-spacing:.2em; color:var(--muted);
+    display:inline-flex; align-self:flex-start; align-items:baseline; gap:.5em;
+    font-family:var(--mono); font-size:.74rem; letter-spacing:.18em; color:var(--muted);
+    background:var(--leaf-wash); border-radius:999px; padding:.28rem 1rem .28rem .8rem;
   }
-  .step-no b{font-size:1.5rem; font-weight:500; color:var(--leaf); letter-spacing:0}
+  .step-no b{font-size:1.6rem; font-weight:500; color:var(--leaf); letter-spacing:0}
   h1{
-    margin:0; font-family:var(--display); font-weight:700; line-height:1.34;
-    font-size:clamp(1.9rem,5.4vw,3rem); text-wrap:balance;
+    margin:0; font-family:var(--display); font-weight:700; line-height:1.36;
+    font-size:clamp(2rem,5.6vw,3.15rem); letter-spacing:.01em; text-wrap:balance;
   }
   h2{
-    margin:0; font-family:var(--display); font-weight:700; line-height:1.4;
-    font-size:clamp(1.5rem,4vw,2.3rem); text-wrap:balance;
+    margin:0; font-family:var(--display); font-weight:700; line-height:1.42;
+    font-size:clamp(1.6rem,4.2vw,2.45rem); letter-spacing:.01em; text-wrap:balance;
   }
   .eli5{
-    margin:0; font-size:clamp(1.08rem,2.5vw,1.42rem); font-weight:500; line-height:1.7;
+    margin:0; font-family:var(--display); font-size:clamp(1.14rem,2.6vw,1.52rem);
+    font-weight:500; line-height:1.75;
     text-wrap:balance; word-break:keep-all; overflow-wrap:anywhere;
   }
   .eli5 em{font-style:normal; color:var(--leaf); font-weight:700}
-  .note{margin:0; font-size:clamp(.9rem,1.7vw,1rem); color:var(--muted); max-width:32rem}
-  .lead{margin:0; font-size:clamp(1rem,2.2vw,1.18rem); color:var(--muted); max-width:30rem}
+  .note{margin:0; font-size:clamp(.95rem,1.8vw,1.08rem); line-height:1.95; color:var(--muted); max-width:32rem}
+  .lead{margin:0; font-size:clamp(1.02rem,2.2vw,1.24rem); line-height:1.95; color:var(--muted); max-width:30rem}
 
   /* rule rows (used on the two list scenes) */
   .rows{display:flex; flex-direction:column; gap:.55rem; margin:0; padding:0; list-style:none}
   .rows li{
-    display:grid; grid-template-columns:1.6rem minmax(0,1fr); gap:.7rem; align-items:start;
-    font-size:clamp(.92rem,1.8vw,1.02rem); line-height:1.7;
+    display:grid; grid-template-columns:1.7rem minmax(0,1fr); gap:.75rem; align-items:start;
+    font-size:clamp(.96rem,1.85vw,1.08rem); line-height:1.75;
   }
   .rows .n{
-    font-family:var(--mono); font-size:.78rem; color:var(--leaf);
-    border:1px solid var(--rule); border-radius:2px; text-align:center; line-height:1.55rem; height:1.6rem;
+    font-family:var(--mono); font-size:.8rem; color:var(--leaf);
+    background:var(--leaf-wash); border:0; border-radius:999px; text-align:center; line-height:1.7rem; height:1.7rem;
   }
-  .rows .law{display:block; font-size:.78rem; color:var(--muted); font-family:var(--mono); letter-spacing:.02em}
+  .rows .law{display:block; font-size:.8rem; color:var(--muted); font-family:var(--mono); letter-spacing:.02em}
 
   figure{margin:0; display:flex; flex-direction:column; gap:.7rem; min-width:0}
   figure svg{
     display:block; width:100%; max-width:100%; height:auto;
-    background:var(--surface); border:1px solid var(--rule); border-radius:3px;
-    padding:.4rem;
+    background:var(--surface); border:1px solid var(--rule); border-radius:16px;
+    padding:.6rem;
   }
-  figcaption{font-size:.84rem; color:var(--muted); font-family:var(--mono); line-height:1.7}
+  figcaption{font-size:.9rem; color:var(--muted); line-height:1.8}
 
   /* svg ink */
-  .ink{stroke:currentColor; fill:none; stroke-width:2}
+  .ink{stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
   .ink-fill{fill:currentColor; stroke:none}
-  .soft{stroke:var(--rule); fill:none; stroke-width:2}
+  .soft{stroke:var(--rule); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
   .soft-fill{fill:var(--sunk); stroke:none}
-  .acc{stroke:var(--leaf); fill:none; stroke-width:2.4}
+  .acc{stroke:var(--leaf); fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round}
   .acc-fill{fill:var(--leaf); stroke:none}
-  .sig{stroke:var(--harvest); fill:none; stroke-width:2.4}
+  .sig{stroke:var(--harvest); fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round}
   .sig-fill{fill:var(--harvest); stroke:none}
   .wash{fill:var(--leaf-wash); stroke:none}
   .wash-sig{fill:var(--harvest-wash); stroke:none}
@@ -123,7 +126,7 @@
   text.acc-t{fill:var(--leaf)}
   text.sig-t{fill:var(--harvest)}
   text.mut{fill:var(--muted)}
-  text.big{font-family:var(--display); font-size:22px; font-weight:700}
+  text.big{font-family:var(--display); font-size:23px; font-weight:700}
 
   /* ---------- beats ---------- */
   .beat{opacity:0}
@@ -146,7 +149,7 @@
   @media (max-width:640px){ .hud-l .nm{display:none} }
   .rail{display:flex; gap:.32rem; align-items:center; justify-content:center; flex-wrap:wrap}
   .dot{
-    width:.85rem; height:.85rem; padding:0; border:1px solid var(--rule); background:transparent;
+    width:.88rem; height:.88rem; padding:0; border:1.5px solid var(--rule); background:transparent;
     border-radius:50%; cursor:pointer;
   }
   .dot[aria-current="true"]{background:var(--leaf); border-color:var(--leaf)}
@@ -157,7 +160,7 @@
   .len small{color:var(--muted); font-size:.92em}
   .btn{
     font:inherit; letter-spacing:.06em; color:var(--muted); background:transparent;
-    border:1px solid var(--rule); border-radius:2px; padding:.22rem .6rem; cursor:pointer;
+    border:1px solid var(--rule); border-radius:999px; padding:.24rem .8rem; cursor:pointer;
   }
   .btn:hover{color:var(--ink); border-color:var(--muted)}
   .btn[aria-pressed="true"]{color:var(--leaf); border-color:var(--leaf)}
@@ -171,7 +174,7 @@
     padding:clamp(1rem,3vw,1.8rem) clamp(1rem,4vw,2rem) 5rem; cursor:default;
   }
   .sheet[hidden]{display:none}
-  .sheet h3{margin:0 0 .2rem; font-family:var(--display); font-size:1.1rem}
+  .sheet h3{margin:0 0 .2rem; font-family:var(--display); font-weight:700; font-size:1.12rem}
   .sheet p{margin:0 0 1rem; font-size:.86rem; color:var(--muted)}
   .sheet table{width:100%; border-collapse:collapse; font-size:.84rem; font-variant-numeric:tabular-nums}
   .sheet th,.sheet td{text-align:right; padding:.42rem .5rem; border-bottom:1px solid var(--rule)}
