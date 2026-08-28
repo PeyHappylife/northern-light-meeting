@@ -36,14 +36,15 @@
   }
 
   *,*::before,*::after{box-sizing:border-box}
-  body{
+  html,body{height:100%}
+  body{overflow:hidden;
     margin:0; background:var(--ground); color:var(--ink);
     font-family:var(--body); line-height:1.85;
     -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
   }
-  .deck{min-height:100dvh; display:flex; flex-direction:column; cursor:pointer; background:var(--sunk)}
+  .deck{height:100%; display:flex; flex-direction:column; cursor:pointer; background:var(--sunk); overflow:hidden}
   .stage{
-    flex:1 1 auto; position:relative; overflow:hidden;
+    flex:1 1 auto; min-height:0; position:relative; overflow:hidden;
   }
   /* 16:9 固定。中身は1600x900の実寸で組み、画面に合わせて等倍縮小する */
   .frame{
@@ -64,6 +65,7 @@
   }
   .scene--title .scene-in{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:34px}
   .scene--title .txt{max-width:34rem}
+  .scene--title .eyebrow{position:absolute; left:96px; top:64px; margin:0}
   .scene--title figure{width:min(34rem,100%)}
 
 
@@ -137,10 +139,13 @@
   /* ---------- beats ---------- */
   .beat{opacity:0}
   .beat.on{opacity:1}
+  .sent{}
+  .ch{opacity:0}
+  .ch.on{opacity:1}
 
   /* ---------- hud ---------- */
   .hud{
-    position:fixed; left:0; right:0; bottom:0; z-index:5;
+    flex:0 0 auto; z-index:5;
     display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:1rem; align-items:center;
     padding:.6rem clamp(.8rem,3vw,1.6rem);
     background:color-mix(in srgb, var(--ground) 88%, transparent);
@@ -152,6 +157,7 @@
   .hud-l{display:flex; align-items:baseline; gap:.6rem; white-space:nowrap}
   .hud-l .idx{color:var(--ink)}
   .hud-l .nm{font-family:var(--body); letter-spacing:0; color:var(--muted)}
+  .hud-l .stp{color:var(--leaf); font-variant-numeric:tabular-nums}
   @media (max-width:640px){ .hud-l .nm{display:none} }
   .rail{display:flex; gap:.32rem; align-items:center; justify-content:center; flex-wrap:wrap}
   .dot{
@@ -190,7 +196,7 @@
   .sheet .close{position:absolute; right:1rem; top:.8rem}
 
   .hint{
-    position:fixed; right:clamp(.8rem,3vw,1.6rem); bottom:3.4rem; z-index:4;
+    position:absolute; right:clamp(.8rem,3vw,1.6rem); bottom:.5rem; z-index:4;
     font-family:var(--mono); font-size:.68rem; letter-spacing:.08em; color:var(--muted);
     opacity:.9; pointer-events:none;
   }
@@ -511,12 +517,12 @@
 </section>
 
   </div><!-- /frame -->
+  <p class="hint" id="hint">クリック / → で一文ずつ　↓ 次のページ　← 戻る　A 自動再生　T 尺</p>
   </div><!-- /stage -->
 
-  <p class="hint" id="hint">クリック / → で次へ　←で戻る　A 自動再生　T 尺</p>
 
   <div class="hud" id="hud">
-    <div class="hud-l"><span class="idx" id="idx">01 / 13</span> <span class="nm" id="nm">タイトル</span></div>
+    <div class="hud-l"><span class="idx" id="idx">01 / 13</span> <span class="nm" id="nm">タイトル</span> <span class="stp" id="stp"></span></div>
     <div class="rail" id="rail"></div>
     <div class="hud-r">
       <span class="len" id="len"></span>
@@ -540,22 +546,28 @@
 <script>
 (function(){
   "use strict";
-  var READ_MS = 2000;                 // 各シーンの「読む間」
-  var GAP_MS  = 140;                  // 拍と拍のあいだ
+  var CHAR_MS   = 46;    // 1文字あたりの送り
+  var SENT_LEAD = 260;   // 文が出はじめるまでの間
+  var SENT_TAIL = 700;   // 文を出し終えたあとの余韻（自動再生のみ）
+  var GAP_MS    = 160;   // 図の要素どうしの間
+  var READ_MS   = 2000;  // 各シーンの読む間
   var DUR = { rise:460, grow:420, draw:640 };
   var EASE = "cubic-bezier(.22,.61,.36,1)";
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // 実測値：Chromium(headless, 1440x900) で全シーンを2回再生し、各シーンの短いほうを採用。
-  // 再計測は tools/measure-fst.js で行い、この配列を差し替える。単位ミリ秒（拍のみ／読む間は含まない）。
-  var MEASURED = [3707, 3599, 3615, 3165, 3599, 2982, 3581, 4199, 4348, 3499, 3599, 3615, 4116];
+  // 実測値：Chromium(headless, 1440x900) で自動再生を最後まで通して計測した時間（ミリ秒／読む間は含まない）。
+  // 文字送り・文と文の間・図のアニメを全部含む。再計測は tools/measure-fst.js。
+  var MEASURED = [13655, 14768, 16280, 15739, 15173, 15243, 14649, 17955, 16620, 16606, 14344, 32242, 16774];
 
   var scenes = Array.prototype.slice.call(document.querySelectorAll(".scene"));
   var live = new Array(scenes.length);
-  var cur = -1, token = 0, running = false, auto = false, autoTimer = null;
+  var cur = -1, token = 0, steps = [], stepIdx = -1;
+  var busy = false, finishNow = null;
+  var auto = false, autoTimer = null, measuring = false;
 
   var idxEl = document.getElementById("idx");
   var nmEl = document.getElementById("nm");
+  var stpEl = document.getElementById("stp");
   var lenEl = document.getElementById("len");
   var railEl = document.getElementById("rail");
   var autoBtn = document.getElementById("autoBtn");
@@ -566,8 +578,72 @@
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
   function pad(n){ return (n < 10 ? "0" : "") + n; }
   function secs(ms){ return (Math.round(ms / 100) / 10).toFixed(1); }
+  function isGfx(el){ return el instanceof SVGElement; }
 
-  function beatsOf(scene){
+  /* ---------- 文章を「文」と「文字」に割る ---------- */
+  function splitText(el){
+    var frag = document.createDocumentFragment();
+    var cur = null;
+    function open(){ cur = document.createElement("span"); cur.className = "sent"; frag.appendChild(cur); }
+    function close(){ cur = null; }
+    function chars(text, host){
+      for (var i = 0; i < text.length; i++){
+        var c = document.createElement("span");
+        c.className = "ch";
+        c.textContent = text.charAt(i);
+        host.appendChild(c);
+      }
+    }
+    function handle(node, host){
+      if (node.nodeType === 3){
+        var parts = node.nodeValue.match(/[^。！？]*[。！？]|[^。！？]+/g) || [];
+        parts.forEach(function(part){
+          if (!part) return;
+          if (!cur) open();
+          chars(part, host || cur);
+          if (!host && /[。！？]$/.test(part)) close();
+        });
+        return;
+      }
+      if (node.nodeType !== 1) return;
+      var tag = node.tagName.toLowerCase();
+      if (tag === "br"){ if (!cur) open(); (host || cur).appendChild(document.createElement("br")); return; }
+      var isBlock = node.classList && node.classList.contains("law");   // 条文の行は独立した一文に
+      if (isBlock) close();
+      if (!cur) open();
+      var clone = node.cloneNode(false);
+      (host || cur).appendChild(clone);
+      Array.prototype.slice.call(node.childNodes).forEach(function(n){ handle(n, clone); });
+      if (isBlock) close();
+    }
+    Array.prototype.slice.call(el.childNodes).forEach(function(n){ handle(n, null); });
+    el.innerHTML = "";
+    el.appendChild(frag);
+    return Array.prototype.slice.call(el.children).filter(function(n){ return n.classList.contains("sent"); });
+  }
+
+  scenes.forEach(function(sc){
+    Array.prototype.forEach.call(sc.querySelectorAll(".beat"), function(el){
+      if (isGfx(el)) return;
+      var sents;
+      if (el.tagName.toLowerCase() === "li") {
+        // 行は「番号」と「本文」の2カラム組み。組みを壊さないよう本文だけを文字に割る
+        var badge = null, body = null;
+        Array.prototype.forEach.call(el.children, function(c){
+          if (c.classList.contains("n")) badge = c; else if (!body) body = c;
+        });
+        sents = body ? splitText(body) : [];
+        if (badge && sents.length) { badge.classList.add("ch"); sents[0].__extra = [badge]; }
+      } else {
+        sents = splitText(el);
+      }
+      el.__sents = sents;
+      el.classList.add("on");          // 枠は最初から出しておき、中身を1文字ずつ出す
+    });
+  });
+
+  /* ---------- シーンのステップ列（文＝1ステップ、図の拍＝1ステップ） ---------- */
+  function stepsOf(scene){
     var map = {}, order = [];
     Array.prototype.forEach.call(scene.querySelectorAll(".beat"), function(el){
       var b = parseInt(el.getAttribute("data-b") || "1", 10);
@@ -575,48 +651,42 @@
       map[b].push(el);
     });
     order.sort(function(a, b){ return a - b; });
-    return order.map(function(b){ return map[b]; });
+    var out = [];
+    order.forEach(function(b){
+      var gfx = map[b].filter(isGfx);
+      map[b].filter(function(el){ return !isGfx(el); }).forEach(function(el){
+        (el.__sents || []).forEach(function(sent){ out.push({ type:"text", sent:sent }); });
+      });
+      if (gfx.length) out.push({ type:"gfx", els:gfx });
+    });
+    return out;
   }
 
-  // data-anim は拍そのものにも、その中の線にも書ける
+  /* ---------- 再生 ---------- */
+  function typeSentence(sent, my){
+    (sent.__extra || []).forEach(function(n){ n.classList.add("on"); });
+    var chars = sent.querySelectorAll(".ch");
+    var i = 0, timer = null;
+    return new Promise(function(resolve){
+      function done(){ finishNow = null; resolve(); }
+      finishNow = function(){
+        clearTimeout(timer);
+        for (var k = i; k < chars.length; k++) chars[k].classList.add("on");
+        i = chars.length;
+        done();
+      };
+      (function tick(){
+        if (my !== token) { finishNow = null; return resolve(); }
+        if (i >= chars.length) return done();
+        chars[i++].classList.add("on");
+        timer = setTimeout(tick, reduce ? 0 : CHAR_MS);
+      })();
+    });
+  }
+
   function drawTargets(el){
     if (el.getAttribute("data-anim") === "draw") return [el];
     return Array.prototype.slice.call(el.querySelectorAll('[data-anim="draw"]'));
-  }
-
-  function playEl(el){
-    var kind = el.getAttribute("data-anim") || "rise";
-    var base = DUR[kind] || DUR.rise;
-    var dur  = reduce ? 1 : (parseInt(el.getAttribute("data-dur") || "0", 10) || base);
-    var anims = [];
-
-    if (kind !== "draw") {
-      var from = (kind === "grow")
-        ? { opacity:0, transform:"scale(.88)" }
-        : { opacity:0, transform:"translateY(10px)" };
-      var to = { opacity:1, transform:"none" };
-      anims.push(el.animate([from, to], { duration:dur, easing:EASE, fill:"both" }));
-    }
-
-    drawTargets(el).forEach(function(p){
-      var len = 0;
-      try { len = p.getTotalLength(); } catch (e) { len = 0; }
-      if (!len) return;
-      p.style.strokeDasharray = len + " " + len;
-      anims.push(p.animate(
-        [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-        { duration: reduce ? 1 : Math.max(dur, DUR.draw), easing: EASE, fill:"both" }
-      ));
-      if (kind === "draw") {
-        anims.push(el.animate([{ opacity:0 }, { opacity:1 }], { duration:1, fill:"both" }));
-      }
-    });
-
-    if (!anims.length) { el.classList.add("on"); return Promise.resolve(); }
-
-    return Promise.all(anims.map(function(a){ return a.finished.catch(function(){}); })).then(function(){
-      settle(el);
-    });
   }
 
   function settle(el){
@@ -628,45 +698,113 @@
     });
   }
 
+  function playEl(el){
+    var kind = el.getAttribute("data-anim") || "rise";
+    var dur = reduce ? 1 : (parseInt(el.getAttribute("data-dur") || "0", 10) || DUR[kind] || DUR.rise);
+    var anims = [];
+    if (kind !== "draw") {
+      var from = (kind === "grow")
+        ? { opacity:0, transform:"scale(.88)" }
+        : { opacity:0, transform:"translateY(10px)" };
+      anims.push(el.animate([from, { opacity:1, transform:"none" }], { duration:dur, easing:EASE, fill:"both" }));
+    }
+    drawTargets(el).forEach(function(p){
+      var len = 0;
+      try { len = p.getTotalLength(); } catch (e) { len = 0; }
+      if (!len) return;
+      p.style.strokeDasharray = len + " " + len;
+      anims.push(p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+        { duration: reduce ? 1 : Math.max(dur, DUR.draw), easing: EASE, fill: "both" }));
+      if (kind === "draw") anims.push(el.animate([{ opacity:0 }, { opacity:1 }], { duration:1, fill:"both" }));
+    });
+    if (!anims.length) { el.classList.add("on"); return Promise.resolve(); }
+    return Promise.all(anims.map(function(a){ return a.finished.catch(function(){}); })).then(function(){ settle(el); });
+  }
+
+  function playGfx(els){
+    return new Promise(function(resolve){
+      var done = false;
+      finishNow = function(){ if (done) return; done = true; els.forEach(settle); finishNow = null; resolve(); };
+      Promise.all(els.map(playEl)).then(function(){
+        if (done) return;
+        done = true; finishNow = null; resolve();
+      });
+    });
+  }
+
+  function playStep(st, my){ return st.type === "text" ? typeSentence(st.sent, my) : playGfx(st.els); }
+
+  function revealAll(scene){
+    Array.prototype.forEach.call(scene.querySelectorAll(".ch"), function(c){ c.classList.add("on"); });
+    Array.prototype.forEach.call(scene.querySelectorAll(".beat"), function(el){ settle(el); });
+  }
+
   function resetScene(scene){
+    Array.prototype.forEach.call(scene.querySelectorAll(".ch"), function(c){ c.classList.remove("on"); });
     Array.prototype.forEach.call(scene.querySelectorAll(".beat"), function(el){
       var all = [el].concat(Array.prototype.slice.call(el.querySelectorAll("*")));
       all.forEach(function(n){
         if (n.getAnimations) n.getAnimations().forEach(function(a){ try { a.cancel(); } catch (e) {} });
         if (n.style) { n.style.strokeDasharray = ""; n.style.strokeDashoffset = ""; }
       });
-      el.classList.remove("on");
+      if (isGfx(el)) el.classList.remove("on"); else el.classList.add("on");
     });
   }
 
-  function revealAll(scene){
-    Array.prototype.forEach.call(scene.querySelectorAll(".beat"), function(el){ settle(el); });
-  }
-
+  /* ---------- HUD ---------- */
   function plannedBeats(i){
     if (MEASURED && MEASURED[i] != null) return MEASURED[i];
     if (live[i] != null) return live[i];
     return null;
   }
-
   function updateHud(){
     var i = Math.max(cur, 0);
     idxEl.textContent = pad(i + 1) + " / " + pad(scenes.length);
     nmEl.textContent = scenes[i].getAttribute("data-name") || "";
+    stpEl.textContent = steps.length ? (Math.max(stepIdx + 1, 0) + " / " + steps.length) : "";
     var b = plannedBeats(i);
     lenEl.innerHTML = b == null
       ? "尺 <small>計測待ち</small>"
-      : "尺 " + secs(b + READ_MS) + "s <small>（拍 " + secs(b) + " ＋ 読む間 2.0）</small>";
+      : "尺 " + secs(b + READ_MS) + "s <small>（自動再生 " + secs(b) + " ＋ 読む間 2.0）</small>";
     Array.prototype.forEach.call(railEl.children, function(d, n){
       d.setAttribute("aria-current", n === i ? "true" : "false");
       if (n < i) d.classList.add("seen"); else d.classList.remove("seen");
     });
   }
 
+  /* ---------- 進行 ---------- */
   function scheduleAuto(){
     clearTimeout(autoTimer);
-    if (!auto || cur >= scenes.length - 1) return;
+    if (!auto || measuring || cur >= scenes.length - 1) return;
     autoTimer = setTimeout(function(){ go(cur + 1); }, READ_MS);
+  }
+
+  function runStep(i, my){
+    stepIdx = i;
+    busy = true;
+    updateHud();
+    var st = steps[i];
+    return sleep(reduce ? 0 : (st.type === "text" ? SENT_LEAD : GAP_MS)).then(function(){
+      if (my !== token) return;
+      return playStep(st, my);
+    }).then(function(){
+      if (my !== token) return;
+      busy = false;
+    });
+  }
+
+  function autoRun(my){
+    var chain = Promise.resolve();
+    steps.forEach(function(st, i){
+      chain = chain.then(function(){
+        if (my !== token) return;
+        return runStep(i, my).then(function(){
+          if (my !== token) return;
+          return sleep(reduce ? 0 : (st.type === "text" ? SENT_TAIL : GAP_MS));
+        });
+      });
+    });
+    return chain;
   }
 
   function go(i, opts){
@@ -674,6 +812,8 @@
     i = Math.max(0, Math.min(scenes.length - 1, i));
     var my = ++token;
     clearTimeout(autoTimer);
+    finishNow = null;
+    busy = false;
 
     if (cur >= 0 && cur !== i) {
       scenes[cur].classList.remove("is-live");
@@ -685,58 +825,43 @@
     resetScene(sc);
     sc.classList.add("is-live");
     sc.setAttribute("aria-hidden", "false");
+    steps = stepsOf(sc);
+    stepIdx = -1;
     updateHud();
     if (location.hash !== "#" + (i + 1)) history.replaceState(null, "", "#" + (i + 1));
 
-    if (opts.instant || reduce) {
-      revealAll(sc);
-      live[i] = live[i] == null ? 0 : live[i];
-      running = false;
-      updateHud();
-      scheduleAuto();
-      return Promise.resolve();
-    }
+    if (opts.instant) { revealAll(sc); stepIdx = steps.length - 1; updateHud(); scheduleAuto(); return Promise.resolve(); }
 
-    running = true;
-    var t0 = performance.now();
-    var groups = beatsOf(sc);
-    var chain = Promise.resolve();
-    groups.forEach(function(g){
-      chain = chain.then(function(){
+    if (auto) {
+      var t0 = performance.now();
+      return autoRun(my).then(function(){
         if (my !== token) return;
-        return Promise.all(g.map(playEl)).then(function(){
-          if (my !== token) return;
-          return sleep(GAP_MS);
-        });
+        live[i] = performance.now() - t0;
+        updateHud();
+        scheduleAuto();
       });
-    });
-    return chain.then(function(){
-      if (my !== token) return;
-      running = false;
-      live[i] = performance.now() - t0;
-      updateHud();
-      scheduleAuto();
-    });
+    }
+    // 手動：1文めだけ自動で出し、あとはクリックで1文ずつ
+    return runStep(0, my);
   }
 
   function next(){
-    if (running) { token++; running = false; revealAll(scenes[cur]); updateHud(); scheduleAuto(); return; }
+    if (busy) { if (finishNow) finishNow(); return; }       // 送り途中のクリックは「今の文を全部出す」
+    if (stepIdx < steps.length - 1) { runStep(stepIdx + 1, token); return; }
     if (cur < scenes.length - 1) go(cur + 1);
   }
   function prev(){ if (cur > 0) go(cur - 1); }
 
-  // rail
   scenes.forEach(function(sc, i){
     var b = document.createElement("button");
     b.type = "button";
     b.className = "dot";
-    b.setAttribute("data-i", i);
     b.setAttribute("aria-label", (i + 1) + ". " + (sc.getAttribute("data-name") || ""));
     b.addEventListener("click", function(ev){ ev.stopPropagation(); go(i); });
     railEl.appendChild(b);
   });
 
-  // timing sheet
+  /* ---------- 尺の表 ---------- */
   function fillSheet(){
     var body = document.getElementById("sheetBody");
     body.innerHTML = "";
@@ -752,8 +877,7 @@
     });
     document.getElementById("sumBeats").textContent = secs(sumB) + "s";
     document.getElementById("sumRead").textContent = secs(READ_MS * scenes.length) + "s";
-    document.getElementById("sumLen").textContent = secs(sumB + READ_MS * scenes.length) + "s"
-      + (known ? "" : "（未計測あり）");
+    document.getElementById("sumLen").textContent = secs(sumB + READ_MS * scenes.length) + "s" + (known ? "" : "（未計測あり）");
   }
   function toggleSheet(on){
     var show = on == null ? sheet.hidden : on;
@@ -770,7 +894,7 @@
     ev.stopPropagation();
     auto = !auto;
     autoBtn.setAttribute("aria-pressed", auto ? "true" : "false");
-    if (auto && !running) scheduleAuto(); else clearTimeout(autoTimer);
+    if (auto) go(cur); else clearTimeout(autoTimer);
   });
 
   document.getElementById("deck").addEventListener("click", function(){ next(); });
@@ -778,6 +902,8 @@
     var k = ev.key;
     if (k === "ArrowRight" || k === " " || k === "Enter" || k === "PageDown") { ev.preventDefault(); next(); }
     else if (k === "ArrowLeft" || k === "PageUp") { ev.preventDefault(); prev(); }
+    else if (k === "ArrowDown") { ev.preventDefault(); if (cur < scenes.length - 1) go(cur + 1); }
+    else if (k === "ArrowUp") { ev.preventDefault(); prev(); }
     else if (k === "Home") { go(0); }
     else if (k === "End") { go(scenes.length - 1); }
     else if (k === "a" || k === "A") { autoBtn.click(); }
@@ -785,9 +911,26 @@
     else if (k === "Escape") { toggleSheet(false); }
   });
 
-  // 計測用フック（ヘッドレスから呼ぶ）
+  /* ---------- 16:9（1600x900）を画面に合わせて等倍縮小 ---------- */
+  var frame = document.getElementById("frame");
+  var stage = document.getElementById("stage");
+  function fit(){
+    var pad = 20;
+    var w = Math.min(stage.clientWidth, document.documentElement.clientWidth || 1e9) - pad * 2;
+    var h = Math.min(stage.clientHeight, document.documentElement.clientHeight || 1e9) - pad * 2;
+    if (w <= 0 || h <= 0) return;
+    var k = Math.min(w / 1600, h / 900);
+    frame.style.setProperty("--fit", Math.max(0.15, Math.min(k, 2)).toFixed(4));
+  }
+  addEventListener("resize", fit);
+  addEventListener("orientationchange", fit);
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
+  fit();
+
+  /* ---------- 計測（ヘッドレスから呼ぶ） ---------- */
   window.__fstMeasure = function(){
-    var wasAuto = auto; auto = false;
+    var wasAuto = auto;
+    auto = true; measuring = true;
     var out = [];
     var chain = Promise.resolve();
     scenes.forEach(function(sc, i){
@@ -795,25 +938,10 @@
         return go(i).then(function(){ out.push(Math.round(live[i] || 0)); });
       });
     });
-    return chain.then(function(){ auto = wasAuto; return out; });
+    return chain.then(function(){ auto = wasAuto; measuring = false; return out; });
   };
   window.__fstScenes = scenes.map(function(sc){ return sc.getAttribute("data-name"); });
-
-  // 16:9（1600x900）を画面に合わせて等倍縮小
-  var frame = document.getElementById("frame");
-  var stage = document.getElementById("stage");
-  function fit(){
-    var pad = 24;
-    var w = stage.clientWidth - pad * 2;
-    var h = stage.clientHeight - pad * 2;
-    if (w <= 0 || h <= 0) return;
-    var k = Math.min(w / 1600, h / 900);
-    frame.style.setProperty("--fit", k.toFixed(4));
-  }
-  addEventListener("resize", fit);
-  addEventListener("orientationchange", fit);
-  if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
-  fit();
+  window.__fstSteps = scenes.map(function(sc){ return stepsOf(sc).length; });
 
   var start = parseInt((location.hash || "").replace("#", ""), 10);
   go(isNaN(start) ? 0 : start - 1);
