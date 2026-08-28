@@ -41,27 +41,33 @@
     font-family:var(--body); line-height:1.85;
     -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
   }
-  .deck{min-height:100dvh; display:flex; flex-direction:column; cursor:pointer}
+  .deck{min-height:100dvh; display:flex; flex-direction:column; cursor:pointer; background:var(--sunk)}
   .stage{
-    flex:1 1 auto; display:flex; align-items:center; justify-content:center;
-    padding:clamp(1.1rem,3.5vw,2.6rem) clamp(1.1rem,4vw,3rem) 6.5rem;
+    flex:1 1 auto; position:relative; overflow:hidden;
+  }
+  /* 16:9 固定。中身は1600x900の実寸で組み、画面に合わせて等倍縮小する */
+  .frame{
+    position:absolute; left:50%; top:50%;
+    width:1600px; height:900px; box-sizing:border-box;
+    transform:translate(-50%,-50%) scale(var(--fit,1)); transform-origin:center center;
+    display:flex; align-items:center;
+    padding:64px 96px 88px;
+    background:var(--ground); border-radius:4px; overflow:hidden;
   }
 
   /* ---------- scenes ---------- */
-  .scene{display:none; width:100%; max-width:66rem}
+  .scene{display:none; width:100%}
   .scene.is-live{display:block}
   .scene-in{
     display:grid; grid-template-columns:minmax(0,0.92fr) minmax(0,1fr);
-    gap:clamp(1.4rem,4vw,3.4rem); align-items:center;
+    gap:56px; align-items:center;
   }
-  .scene--title .scene-in{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:clamp(1.6rem,4vw,2.6rem)}
+  .scene--title .scene-in{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:34px}
   .scene--title .txt{max-width:34rem}
   .scene--title figure{width:min(34rem,100%)}
-  @media (max-width:860px){
-    .scene-in{grid-template-columns:minmax(0,1fr); gap:1.4rem}
-  }
 
-  .txt{display:flex; flex-direction:column; gap:.9rem; min-width:0}
+
+  .txt{display:flex; flex-direction:column; gap:16px; min-width:0}
   .eyebrow{
     margin:0; align-self:flex-start; font-family:var(--mono); font-size:.74rem; letter-spacing:.18em;
     text-transform:uppercase; color:var(--leaf);
@@ -75,26 +81,26 @@
   .step-no b{font-size:1.6rem; font-weight:500; color:var(--leaf); letter-spacing:0}
   h1{
     margin:0; font-family:var(--display); font-weight:700; line-height:1.36;
-    font-size:clamp(2rem,5.6vw,3.15rem); letter-spacing:.01em; text-wrap:balance;
+    font-size:50px; letter-spacing:.01em; text-wrap:balance;
   }
   h2{
     margin:0; font-family:var(--display); font-weight:700; line-height:1.42;
-    font-size:clamp(1.6rem,4.2vw,2.45rem); letter-spacing:.01em; text-wrap:balance;
+    font-size:39px; letter-spacing:.01em; text-wrap:balance;
   }
   .eli5{
-    margin:0; font-family:var(--display); font-size:clamp(1.14rem,2.6vw,1.52rem);
+    margin:0; font-family:var(--display); font-size:24px;
     font-weight:500; line-height:1.75;
     text-wrap:balance; word-break:keep-all; overflow-wrap:anywhere;
   }
   .eli5 em{font-style:normal; color:var(--leaf); font-weight:700}
-  .note{margin:0; font-size:clamp(.95rem,1.8vw,1.08rem); line-height:1.95; color:var(--muted); max-width:32rem}
-  .lead{margin:0; font-size:clamp(1.02rem,2.2vw,1.24rem); line-height:1.95; color:var(--muted); max-width:30rem}
+  .note{margin:0; font-size:17px; line-height:1.95; color:var(--muted); max-width:32rem}
+  .lead{margin:0; font-size:20px; line-height:1.95; color:var(--muted); max-width:30rem}
 
   /* rule rows (used on the two list scenes) */
   .rows{display:flex; flex-direction:column; gap:.55rem; margin:0; padding:0; list-style:none}
   .rows li{
     display:grid; grid-template-columns:1.7rem minmax(0,1fr); gap:.75rem; align-items:start;
-    font-size:clamp(.96rem,1.85vw,1.08rem); line-height:1.75;
+    font-size:17px; line-height:1.75;
   }
   .rows .n{
     font-family:var(--mono); font-size:.8rem; color:var(--leaf);
@@ -195,6 +201,7 @@
 
 <div class="deck" id="deck">
   <div class="stage" id="stage">
+  <div class="frame" id="frame">
 
 <!-- ===== 01 title ===== -->
 <section class="scene scene--title" data-name="タイトル" aria-hidden="true">
@@ -503,6 +510,7 @@
   </div>
 </section>
 
+  </div><!-- /frame -->
   </div><!-- /stage -->
 
   <p class="hint" id="hint">クリック / → で次へ　←で戻る　A 自動再生　T 尺</p>
@@ -790,6 +798,22 @@
     return chain.then(function(){ auto = wasAuto; return out; });
   };
   window.__fstScenes = scenes.map(function(sc){ return sc.getAttribute("data-name"); });
+
+  // 16:9（1600x900）を画面に合わせて等倍縮小
+  var frame = document.getElementById("frame");
+  var stage = document.getElementById("stage");
+  function fit(){
+    var pad = 24;
+    var w = stage.clientWidth - pad * 2;
+    var h = stage.clientHeight - pad * 2;
+    if (w <= 0 || h <= 0) return;
+    var k = Math.min(w / 1600, h / 900);
+    frame.style.setProperty("--fit", k.toFixed(4));
+  }
+  addEventListener("resize", fit);
+  addEventListener("orientationchange", fit);
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
+  fit();
 
   var start = parseInt((location.hash || "").replace("#", ""), 10);
   go(isNaN(start) ? 0 : start - 1);

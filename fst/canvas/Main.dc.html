@@ -33,19 +33,24 @@
     font-family:var(--body); line-height:1.85;
     -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
   }
-  /* ---------- scenes ---------- */   .scene {display:none; width:100%; max-width:66rem}
+  /* 16:9 固定。中身は1600x900の実寸で組み、画面に合わせて等倍縮小する */   .frame {
+    position:absolute; left:50%; top:50%;
+    width:1600px; height:900px; box-sizing:border-box;
+    transform:translate(-50%,-50%) scale(var(--fit,1)); transform-origin:center center;
+    display:flex; align-items:center;
+    padding:64px 96px 88px;
+    background:var(--ground); border-radius:4px; overflow:hidden;
+  }
+  /* ---------- scenes ---------- */   .scene {display:none; width:100%}
   .scene.is-live {display:block}
   .scene-in {
     display:grid; grid-template-columns:minmax(0,0.92fr) minmax(0,1fr);
-    gap:clamp(1.4rem,4vw,3.4rem); align-items:center;
+    gap:56px; align-items:center;
   }
-  .scene--title .scene-in {grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:clamp(1.6rem,4vw,2.6rem)}
+  .scene--title .scene-in {grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:34px}
   .scene--title .txt {max-width:34rem}
   .scene--title figure {width:min(34rem,100%)}
-  @media (max-width:860px) {
-    .scene-in{grid-template-columns:minmax(0,1fr); gap:1.4rem}
-  }
-  .txt {display:flex; flex-direction:column; gap:.9rem; min-width:0}
+  .txt {display:flex; flex-direction:column; gap:16px; min-width:0}
   .eyebrow {
     margin:0; align-self:flex-start; font-family:var(--mono); font-size:.74rem; letter-spacing:.18em;
     text-transform:uppercase; color:var(--leaf);
@@ -59,24 +64,24 @@
   .step-no b {font-size:1.6rem; font-weight:500; color:var(--leaf); letter-spacing:0}
   h1 {
     margin:0; font-family:var(--display); font-weight:700; line-height:1.36;
-    font-size:clamp(2rem,5.6vw,3.15rem); letter-spacing:.01em; text-wrap:balance;
+    font-size:50px; letter-spacing:.01em; text-wrap:balance;
   }
   h2 {
     margin:0; font-family:var(--display); font-weight:700; line-height:1.42;
-    font-size:clamp(1.6rem,4.2vw,2.45rem); letter-spacing:.01em; text-wrap:balance;
+    font-size:39px; letter-spacing:.01em; text-wrap:balance;
   }
   .eli5 {
-    margin:0; font-family:var(--display); font-size:clamp(1.14rem,2.6vw,1.52rem);
+    margin:0; font-family:var(--display); font-size:24px;
     font-weight:500; line-height:1.75;
     text-wrap:balance; word-break:keep-all; overflow-wrap:anywhere;
   }
   .eli5 em {font-style:normal; color:var(--leaf); font-weight:700}
-  .note {margin:0; font-size:clamp(.95rem,1.8vw,1.08rem); line-height:1.95; color:var(--muted); max-width:32rem}
-  .lead {margin:0; font-size:clamp(1.02rem,2.2vw,1.24rem); line-height:1.95; color:var(--muted); max-width:30rem}
+  .note {margin:0; font-size:17px; line-height:1.95; color:var(--muted); max-width:32rem}
+  .lead {margin:0; font-size:20px; line-height:1.95; color:var(--muted); max-width:30rem}
   /* rule rows (used on the two list scenes) */   .rows {display:flex; flex-direction:column; gap:.55rem; margin:0; padding:0; list-style:none}
   .rows li {
     display:grid; grid-template-columns:1.7rem minmax(0,1fr); gap:.75rem; align-items:start;
-    font-size:clamp(.96rem,1.85vw,1.08rem); line-height:1.75;
+    font-size:17px; line-height:1.75;
   }
   .rows .n {
     font-family:var(--mono); font-size:.8rem; color:var(--leaf);
@@ -123,23 +128,25 @@
     padding:clamp(1rem,3vw,1.8rem) clamp(1rem,4vw,2rem) 5rem; cursor:default;
   }
   .beat{opacity:1}
+  /* 本番スライドと同じ実寸：1600 x 900（16:9） */
   .slide{
-    width:1280px; background:var(--ground); color:var(--ink);
-    font-family:var(--body); line-height:1.85; display:flex; align-items:center;
-    padding:76px 88px 96px; box-sizing:border-box; position:relative;
+    width:1600px; height:900px; box-sizing:border-box;
+    background:var(--ground); color:var(--ink);
+    font-family:var(--body); line-height:1.85;
+    display:flex; align-items:center; padding:64px 96px 88px; position:relative;
   }
   .slide .scene-in{width:100%}
   .slide--title .scene-in{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:34px}
   .slide--title .txt{max-width:34rem}
   .slide--title figure{width:544px}
   .stamp{
-    position:absolute; left:88px; bottom:44px; font-family:var(--mono);
+    position:absolute; left:96px; bottom:40px; font-family:var(--mono);
     font-size:13px; letter-spacing:.14em; color:var(--muted);
   }
 
   </style>
 </helmet>
-<div class="slide slide--title" style="height: 900px">
+<div class="slide slide--title">
   <div class="scene-in">
 
     <div class="txt">
@@ -159,7 +166,7 @@
     </figure>
   
   </div>
-  <span class="stamp">ファーストステップ・トレーニング</span>
+  <span class="stamp">ファーストステップ・トレーニング　16:9</span>
 </div>
 </x-dc>
 </body>
