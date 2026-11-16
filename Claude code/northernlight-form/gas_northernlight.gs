@@ -415,7 +415,7 @@ function installTemplates() {
     '──────────────\n' +
     'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n会場：[会場]\nゲスト：[ゲスト]\n' +
     '──────────────';
-  const link = '追加はこちら\n→ https://peyhappylife.github.io/northern-light-meeting/';
+  const link = '追加はこちら\n→ https://peytv.net/meeting';
 
   const T = {
     'オーダー受付メール':
@@ -432,11 +432,11 @@ function installTemplates() {
       block + '\n\n' + link + '\n\nお気をつけてお越しください。お会いできるのを楽しみにしております。',
     '当日感謝メール':
       '[名前] 様\n本日は[イベント名]にご参加いただき、誠にありがとうございました。\n\n' +
-      '次回はこちら\n→ https://peyhappylife.github.io/northern-light-meeting/\n\n' +
+      '次回はこちら\n→ https://peytv.net/meeting\n\n' +
       'またのご参加を、スタッフ一同、心よりお待ちしております。',
     '次回リマインドメール':
       '[名前] 様\n\n先日は[イベント名]にご参加いただき、誠にありがとうございました。\n次回開催のご案内です。ぜひまたお越しください。\n\n' +
-      eventBlock + '\n\nオーダーはこちら\n→ https://peyhappylife.github.io/northern-light-meeting/\n\n' +
+      eventBlock + '\n\nオーダーはこちら\n→ https://peytv.net/meeting\n\n' +
       'スタッフ一同、心よりお待ちしております。'
   };
 
