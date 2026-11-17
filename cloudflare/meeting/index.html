@@ -79,8 +79,8 @@
         }
 
         .form-panel {
-            background: var(--card-bg); border-radius: 24px; padding: 26px 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.8);
-            width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; opacity: 0; pointer-events: none;
+            background: rgba(255,255,255,.55); border-radius: 24px; padding: 26px 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 2px solid var(--input-border);
+            width: calc(100% - 20px); max-width: 566px; max-height: 90vh; overflow-y: auto; opacity: 0; pointer-events: none; -webkit-text-stroke: .35px rgba(15,23,42,.8); paint-order: stroke fill;
         }
         /* 完了画面：フローティングを画面いっぱいに表示 */
         .modal-overlay.success-full { padding: 0; }
