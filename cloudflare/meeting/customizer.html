@@ -68,23 +68,32 @@
       <h1>光の見え方を、<br>その場で調整。</h1>
       <p class="intro">スライダーを動かすと、右側の申し込みページにすぐ反映されます。日付を選び、「お申し込み手続きへ進む」を押すと入力画面も確認できます。</p>
 
-      <div class="group"><h2>背景の透け具合</h2>
-        <div class="field"><div class="field-head"><label for="dateOpacity">日付カードの白さ</label><output for="dateOpacity" id="dateOpacity-value"></output></div><input type="range" id="dateOpacity" min="0" max="100" step="0.5" value="37.5"><div class="range-ends"><span>透明</span><span>白</span></div></div>
-        <div class="field"><div class="field-head"><label for="detailOpacity">イベント詳細の白さ</label><output for="detailOpacity" id="detailOpacity-value"></output></div><input type="range" id="detailOpacity" min="0" max="100" step="0.5" value="37.5"><div class="range-ends"><span>透明</span><span>白</span></div></div>
-        <div class="field"><div class="field-head"><label for="formOpacity">入力画面の白さ</label><output for="formOpacity" id="formOpacity-value"></output></div><input type="range" id="formOpacity" min="0" max="100" step="1" value="55"><div class="range-ends"><span>透明</span><span>白</span></div></div>
-        <div class="field"><div class="field-head"><label for="overlayOpacity">入力画面の外側の暗さ</label><output for="overlayOpacity" id="overlayOpacity-value"></output></div><input type="range" id="overlayOpacity" min="0" max="90" step="1" value="62"><div class="range-ends"><span>明るい</span><span>暗い</span></div></div>
-      </div>
-
-      <div class="group"><h2>幅と余白</h2>
-        <div class="field"><div class="field-head"><label for="contentWidth">全体の最大幅</label><output for="contentWidth" id="contentWidth-value"></output></div><input type="range" id="contentWidth" min="280" max="900" step="10" value="850"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
-        <div class="field"><div class="field-head"><label for="formWidth">入力画面の横幅</label><output for="formWidth" id="formWidth-value"></output></div><input type="range" id="formWidth" min="70" max="100" step="1" value="100"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
-        <div class="field"><div class="field-head"><label for="cardPadding">カード内の余白</label><output for="cardPadding" id="cardPadding-value"></output></div><input type="range" id="cardPadding" min="4" max="32" step="1" value="14"><div class="range-ends"><span>少ない</span><span>多い</span></div></div>
-        <div class="field"><div class="field-head"><label for="cardGap">日付カードの間隔</label><output for="cardGap" id="cardGap-value"></output></div><input type="range" id="cardGap" min="0" max="28" step="1" value="10"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
-      </div>
-
-      <div class="group"><h2>文字</h2>
+      <div class="group"><h2>日付選択カード</h2>
+        <div class="field"><div class="field-head"><label for="dateOpacity">背景の白さ</label><output for="dateOpacity" id="dateOpacity-value"></output></div><input type="range" id="dateOpacity" min="0" max="100" step="0.5" value="37.5"><div class="range-ends"><span>透明</span><span>白</span></div></div>
+        <div class="field"><div class="field-head"><label for="datePadding">内側の余白</label><output for="datePadding" id="datePadding-value"></output></div><input type="range" id="datePadding" min="4" max="32" step="1" value="14"><div class="range-ends"><span>少ない</span><span>多い</span></div></div>
+        <div class="field"><div class="field-head"><label for="cardGap">カード同士の間隔</label><output for="cardGap" id="cardGap-value"></output></div><input type="range" id="cardGap" min="0" max="28" step="1" value="10"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
         <div class="field"><div class="field-head"><label for="dateSize">日付の文字サイズ</label><output for="dateSize" id="dateSize-value"></output></div><input type="range" id="dateSize" min="14" max="34" step="0.2" value="19.2"><div class="range-ends"><span>小さい</span><span>大きい</span></div></div>
-        <div class="field"><div class="field-head"><label for="outlineWidth">文字の縁取り</label><output for="outlineWidth" id="outlineWidth-value"></output></div><input type="range" id="outlineWidth" min="0" max="3" step="0.1" value="1"><div class="range-ends"><span>なし</span><span>太い</span></div></div>
+        <div class="field"><div class="field-head"><label for="dateOutline">日付の文字の縁取り</label><output for="dateOutline" id="dateOutline-value"></output></div><input type="range" id="dateOutline" min="0" max="3" step="0.1" value="1"><div class="range-ends"><span>なし</span><span>太い</span></div></div>
+      </div>
+
+      <div class="group"><h2>イベント詳細カード</h2>
+        <div class="field"><div class="field-head"><label for="detailOpacity">背景の白さ</label><output for="detailOpacity" id="detailOpacity-value"></output></div><input type="range" id="detailOpacity" min="0" max="100" step="0.5" value="37.5"><div class="range-ends"><span>透明</span><span>白</span></div></div>
+        <div class="field"><div class="field-head"><label for="detailPadding">内側の余白</label><output for="detailPadding" id="detailPadding-value"></output></div><input type="range" id="detailPadding" min="4" max="32" step="1" value="14"><div class="range-ends"><span>少ない</span><span>多い</span></div></div>
+        <div class="field"><div class="field-head"><label for="detailSize">本文の文字サイズ</label><output for="detailSize" id="detailSize-value"></output></div><input type="range" id="detailSize" min="12" max="30" step="1" value="18"><div class="range-ends"><span>小さい</span><span>大きい</span></div></div>
+        <div class="field"><div class="field-head"><label for="detailOutline">本文の文字の縁取り</label><output for="detailOutline" id="detailOutline-value"></output></div><input type="range" id="detailOutline" min="0" max="3" step="0.1" value="0"><div class="range-ends"><span>なし</span><span>太い</span></div></div>
+      </div>
+
+      <div class="group"><h2>申込入力画面</h2>
+        <div class="field"><div class="field-head"><label for="formOpacity">背景の白さ</label><output for="formOpacity" id="formOpacity-value"></output></div><input type="range" id="formOpacity" min="0" max="100" step="1" value="55"><div class="range-ends"><span>透明</span><span>白</span></div></div>
+        <div class="field"><div class="field-head"><label for="formWidth">横幅</label><output for="formWidth" id="formWidth-value"></output></div><input type="range" id="formWidth" min="70" max="100" step="1" value="100"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
+        <div class="field"><div class="field-head"><label for="formPadding">内側の余白</label><output for="formPadding" id="formPadding-value"></output></div><input type="range" id="formPadding" min="4" max="32" step="1" value="14"><div class="range-ends"><span>少ない</span><span>多い</span></div></div>
+        <div class="field"><div class="field-head"><label for="formSize">入力ラベルの文字サイズ</label><output for="formSize" id="formSize-value"></output></div><input type="range" id="formSize" min="14" max="30" step="1" value="21"><div class="range-ends"><span>小さい</span><span>大きい</span></div></div>
+        <div class="field"><div class="field-head"><label for="formOutline">入力ラベルの縁取り</label><output for="formOutline" id="formOutline-value"></output></div><input type="range" id="formOutline" min="0" max="3" step="0.1" value="1"><div class="range-ends"><span>なし</span><span>太い</span></div></div>
+      </div>
+
+      <div class="group"><h2>画面全体</h2>
+        <div class="field"><div class="field-head"><label for="contentWidth">ページの最大幅</label><output for="contentWidth" id="contentWidth-value"></output></div><input type="range" id="contentWidth" min="280" max="900" step="10" value="850"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
+        <div class="field"><div class="field-head"><label for="overlayOpacity">申込入力画面の外側の暗さ</label><output for="overlayOpacity" id="overlayOpacity-value"></output></div><input type="range" id="overlayOpacity" min="0" max="90" step="1" value="62"><div class="range-ends"><span>明るい</span><span>暗い</span></div></div>
       </div>
 
       <div class="actions">
@@ -105,14 +114,21 @@
   <script>
     (function () {
       "use strict";
-      var ids = ["dateOpacity", "detailOpacity", "formOpacity", "overlayOpacity", "contentWidth", "formWidth", "cardPadding", "cardGap", "dateSize", "outlineWidth"];
-      var defaults = { dateOpacity: 37.5, detailOpacity: 37.5, formOpacity: 55, overlayOpacity: 62, contentWidth: 850, formWidth: 100, cardPadding: 14, cardGap: 10, dateSize: 19.2, outlineWidth: 1 };
-      var storageKey = "northern-light-meeting-customizer-v1";
+      var ids = ["dateOpacity", "datePadding", "cardGap", "dateSize", "dateOutline", "detailOpacity", "detailPadding", "detailSize", "detailOutline", "formOpacity", "formWidth", "formPadding", "formSize", "formOutline", "contentWidth", "overlayOpacity"];
+      var defaults = { dateOpacity: 37.5, datePadding: 14, cardGap: 10, dateSize: 19.2, dateOutline: 1, detailOpacity: 37.5, detailPadding: 14, detailSize: 18, detailOutline: 0, formOpacity: 55, formWidth: 100, formPadding: 14, formSize: 21, formOutline: 1, contentWidth: 850, overlayOpacity: 62 };
+      var storageKey = "northern-light-meeting-customizer-v2";
       var frame = document.getElementById("preview");
       var status = document.getElementById("status");
       var current = Object.assign({}, defaults);
       try {
         var saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+        if (!saved) {
+          saved = JSON.parse(localStorage.getItem("northern-light-meeting-customizer-v1") || "null");
+          if (saved) {
+            saved.datePadding = saved.detailPadding = saved.formPadding = saved.cardPadding;
+            saved.dateOutline = saved.formOutline = saved.outlineWidth;
+          }
+        }
         if (saved && typeof saved === "object") ids.forEach(function (id) {
           var input = document.getElementById(id);
           var n = Number(saved[id]);
@@ -127,21 +143,21 @@
           rules.push(".event-radio-label { background: rgba(255,255,255," + alpha(current.dateOpacity) + ") !important; }");
           rules.push(".event-radio-label.selected { background: rgba(240,249,255," + alpha(current.dateOpacity) + ") !important; }");
         }
-        if (current.detailOpacity !== defaults.detailOpacity) rules.push(".details-panel { background: rgba(255,255,255," + alpha(current.detailOpacity) + ") !important; }");
-        if (current.formOpacity !== defaults.formOpacity) rules.push(".form-panel:not(.success-full) { background: rgba(255,255,255," + alpha(current.formOpacity) + ") !important; }");
-        if (current.overlayOpacity !== defaults.overlayOpacity) rules.push(".modal-overlay.active { background: rgba(15,23,42," + alpha(current.overlayOpacity) + ") !important; }");
-        if (current.contentWidth !== defaults.contentWidth) rules.push(".container { max-width: " + current.contentWidth + "px !important; }");
-        if (current.formWidth !== defaults.formWidth) rules.push(".form-panel:not(.success-full) { width: calc(" + current.formWidth + "% - 20px) !important; }");
-        if (current.cardPadding !== defaults.cardPadding) {
-          rules.push(".event-radio-label, .details-panel { padding: " + current.cardPadding + "px 12px !important; }");
-          rules.push(".form-panel:not(.success-full) { padding: " + (current.cardPadding + 12) + "px " + (current.cardPadding + 6) + "px !important; }");
-        }
+        if (current.datePadding !== defaults.datePadding) rules.push(".event-radio-label { padding: " + current.datePadding + "px 12px !important; }");
         if (current.cardGap !== defaults.cardGap) rules.push(".radio-container { gap: " + current.cardGap + "px !important; }");
         if (current.dateSize !== defaults.dateSize) rules.push(".evlabel-date { font-size: " + current.dateSize + "px !important; }");
-        if (current.outlineWidth !== defaults.outlineWidth) {
-          rules.push(".evlabel-date { -webkit-text-stroke: " + current.outlineWidth + "px #111 !important; }");
-          rules.push("#form-panel-view .form-title, #form-panel-view .form-group > label, #form-panel-view #panel-confirm h3, #form-panel-view #panel-confirm > p, #form-panel-view .confirm-lbl, #form-panel-view .confirm-val { -webkit-text-stroke: " + current.outlineWidth + "px #111 !important; }");
-        }
+        if (current.dateOutline !== defaults.dateOutline) rules.push(".evlabel-date { -webkit-text-stroke: " + current.dateOutline + "px #111 !important; }");
+        if (current.detailOpacity !== defaults.detailOpacity) rules.push(".details-panel { background: rgba(255,255,255," + alpha(current.detailOpacity) + ") !important; }");
+        if (current.detailPadding !== defaults.detailPadding) rules.push(".details-panel { padding: " + current.detailPadding + "px 12px !important; }");
+        if (current.detailSize !== defaults.detailSize) rules.push(".details-panel .event-time, .details-panel .event-venue, .details-panel .event-guest, .details-panel .event-description { font-size: " + current.detailSize + "px !important; }");
+        if (current.detailOutline !== defaults.detailOutline) rules.push(".details-panel .event-date, .details-panel .event-time, .details-panel .event-venue, .details-panel .event-guest, .details-panel .event-description { -webkit-text-stroke: " + current.detailOutline + "px #111 !important; paint-order: stroke fill; }");
+        if (current.formOpacity !== defaults.formOpacity) rules.push(".form-panel:not(.success-full) { background: rgba(255,255,255," + alpha(current.formOpacity) + ") !important; }");
+        if (current.formWidth !== defaults.formWidth) rules.push(".form-panel:not(.success-full) { width: calc(" + current.formWidth + "% - 20px) !important; }");
+        if (current.formPadding !== defaults.formPadding) rules.push(".form-panel:not(.success-full) { padding: " + (current.formPadding + 12) + "px " + (current.formPadding + 6) + "px !important; }");
+        if (current.formSize !== defaults.formSize) rules.push("#form-panel-view .form-group.lg > label { font-size: " + current.formSize + "px !important; }");
+        if (current.formOutline !== defaults.formOutline) rules.push("#form-panel-view .form-title, #form-panel-view .form-group > label, #form-panel-view #panel-confirm h3, #form-panel-view #panel-confirm > p, #form-panel-view .confirm-lbl, #form-panel-view .confirm-val { -webkit-text-stroke: " + current.formOutline + "px #111 !important; }");
+        if (current.contentWidth !== defaults.contentWidth) rules.push(".container { max-width: " + current.contentWidth + "px !important; }");
+        if (current.overlayOpacity !== defaults.overlayOpacity) rules.push(".modal-overlay.active { background: rgba(15,23,42," + alpha(current.overlayOpacity) + ") !important; }");
         return rules.join("\n");
       }
       function apply() {
