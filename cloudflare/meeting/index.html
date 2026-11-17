@@ -12,12 +12,12 @@
         
         .container { width: 100%; max-width: 600px; padding: 16px 12px; box-sizing: border-box; }
         
-        .selector-section { width: 100%; padding: 18px 14px; margin: 0 auto 20px auto; text-align: center; background: rgba(255, 255, 255, 0.375); border-radius: 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.8); transition: opacity 0.4s ease; }
+        .selector-section { width: 100%; padding: 18px 14px; margin: 0 auto 20px auto; text-align: center; background: transparent; border-radius: 16px; box-shadow: none; border: 1px solid transparent; transition: opacity 0.4s ease; }
         .select-alert { font-size: 16px; font-weight: bold; color: var(--text-blue); margin-top: 0; margin-bottom: 12px; }
         .radio-container { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
-        .event-radio-label { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 12px; background: rgba(255,255,255,.5); border: 2px solid var(--input-border); border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s ease; user-select: none; -webkit-user-select: none; }
+        .event-radio-label { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 12px; background: rgba(255,255,255,.375); border: 2px solid var(--input-border); border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s ease; user-select: none; -webkit-user-select: none; }
         .event-radio-label input[type="radio"] { margin-right: 12px; width: 20px; height: 20px; accent-color: #0284c7; flex-shrink: 0; }
-        .event-radio-label.selected { border-color: #38bdf8; background: #f0f9ff; color: #0369a1; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
+        .event-radio-label.selected { border-color: #38bdf8; background: rgba(240,249,255,.375); color: #0369a1; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
         .evlabel { text-align: center; line-height: 1.5; }
         
         .main-layout { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 5px; width: 100%; transition: opacity 0.4s ease; }
