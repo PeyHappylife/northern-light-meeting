@@ -12,38 +12,6 @@
         
         .container { width: 100%; max-width: 600px; padding: 16px 12px; box-sizing: border-box; }
         
-        /* 複合ネオンバウンス・ローディングゲート */
-        .loading-gate { width: 100%; max-width: 500px; margin: 60px auto; text-align: center; background: rgba(255,255,255,.375); padding: 18px 14px; border-radius: 24px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.7); transition: opacity 0.4s ease, transform 0.4s ease; }
-        .loading-gate.fade-out { opacity: 0; transform: scale(0.95); pointer-events: none; }
-        .spinner { width: 36px; height: 36px; border: 4px solid rgba(2, 132, 199, 0.08); border-left-color: #0284c7; border-radius: 50%; margin: 0 auto 24px auto; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .bouncing-neon-text { display: flex; justify-content: center; font-size: clamp(15px, 4.2vw, 19px); font-weight: bold; letter-spacing: 0.02em; padding: 10px 0; }
-        .bouncing-neon-text span { display: inline-block; color: var(--text-blue); animation: wave-jelly-neon 1.6s infinite ease-in-out; transform-origin: bottom center; }
-        
-        .bouncing-neon-text span:nth-child(1)  { animation-delay: 0.00s; }
-        .bouncing-neon-text span:nth-child(2)  { animation-delay: 0.08s; }
-        .bouncing-neon-text span:nth-child(3)  { animation-delay: 0.16s; }
-        .bouncing-neon-text span:nth-child(4)  { animation-delay: 0.24s; }
-        .bouncing-neon-text span:nth-child(5)  { animation-delay: 0.32s; }
-        .bouncing-neon-text span:nth-child(6)  { animation-delay: 0.40s; }
-        .bouncing-neon-text span:nth-child(7)  { animation-delay: 0.48s; }
-        .bouncing-neon-text span:nth-child(8)  { animation-delay: 0.56s; }
-        .bouncing-neon-text span:nth-child(9)  { animation-delay: 0.64s; }
-        .bouncing-neon-text span:nth-child(10) { animation-delay: 0.72s; }
-        .bouncing-neon-text span:nth-child(11) { animation-delay: 0.80s; }
-        .bouncing-neon-text span:nth-child(12) { animation-delay: 0.88s; }
-        .bouncing-neon-text span:nth-child(13) { animation-delay: 0.96s; }
-        .bouncing-neon-text span:nth-child(14) { animation-delay: 1.04s; }
-        .bouncing-neon-text span:nth-child(15) { animation-delay: 1.12s; }
-
-        @keyframes wave-jelly-neon {
-            0%, 100% { transform: translateY(0) scale(1, 1); color: var(--text-blue); text-shadow: none; }
-            30% { transform: translateY(-16px) scale(0.85, 1.15); color: #ec4899; text-shadow: 0 0 8px rgba(236, 72, 153, 0.9), 0 0 20px rgba(236, 72, 153, 0.5); }
-            50% { transform: translateY(0) scale(1.18, 0.82); color: #00aeef; text-shadow: 0 0 10px rgba(0, 174, 239, 0.9); }
-            70% { transform: translateY(-3px) scale(0.98, 1.02); color: #a855f7; text-shadow: 0 0 6px rgba(168, 85, 247, 0.5); }
-        }
-
         .selector-section { width: 100%; padding: 18px 14px; margin: 0 auto 20px auto; text-align: center; background: rgba(255, 255, 255, 0.375); border-radius: 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.8); transition: opacity 0.4s ease; }
         .select-alert { font-size: 16px; font-weight: bold; color: var(--text-blue); margin-top: 0; margin-bottom: 12px; }
         .radio-container { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
@@ -94,7 +62,6 @@
         /* スマホは重い背景ぼかしを無効化（GPU負荷によるフリーズを防止／PCはぼかし維持） */
         @media (max-width: 640px) {
             body { min-height: 100svh; min-height: 100dvh; }
-            #loading-gate { margin: auto; }
             #app-content { display: flex; flex-direction: column; justify-content: center; min-height: 100svh; min-height: 100dvh; margin: 0; }
             #app-content > .selector-section { margin: 0; }
             .modal-overlay.active.anim-neon,
@@ -331,15 +298,6 @@
         <div class="video-overlay"></div>
     </div>
     
-    <!-- 初期読込専用の完全隔離ゲート -->
-    <div id="loading-gate" class="loading-gate">
-        <div class="spinner"></div>
-        <div class="bouncing-neon-text" id="loading-gate-text">
-            <span>イ</span><span>ベ</span><span>ン</span><span>ト</span><span>情</span><span>報</span><span>を</span><span>読み込み中</span><span>.</span><span>.</span><span>.</span>
-        </div>
-        <p style="font-size:12px; font-weight:normal; color:var(--text-muted); margin-top:20px;">（初回は数秒かかる場合があります）</p>
-    </div>
-
     <!-- 本編コンテナ -->
     <div id="app-content" class="container hidden">
         <div class="selector-section">
@@ -457,18 +415,6 @@
                 }
                 updateSteps();
 
-                setTimeout(function() {
-                    if (globalEvents.length === 0 && document.getElementById('app-content').classList.contains('hidden')) {
-                        document.getElementById('loading-gate').innerHTML = `
-                            <div style='color:var(--accent-red); text-align:left; background:#fff1f2; padding:24px; border-radius:16px; border:2px solid #fecdd3; max-width:480px; margin:0 auto; font-family:sans-serif;'>
-                                <h3 style='margin-top:0; font-size:18px;'>⚠️ データ読み込みエラー</h3>
-                                <p style='font-size:14px; color:#9f1239; line-height:1.6; margin-bottom:14px;'>Google Apps Script の API URL が設定されていません。</p>
-                                <h4 style='margin:10px 0 6px 0; font-size:14px; color:#1e293b;'>【解決方法】</h4>
-                                <p style='font-size:13px; color:#475569; padding-left:20px; margin-top:0;'>index.html の GAS_API_URL に、デプロイ後のウェブアプリ URL を設定してください。</p>
-                            </div>`;
-                    }
-                }, 5000);
-
                 fetchEventsList();
                 flushConfirmations();   // フォーム読み込み時：未送信の確認メールを送信（非同期・UIは待たせない）
             } catch(e) {
@@ -574,18 +520,13 @@
         function renderSelectors(events) {
             try {
                 globalEvents = events;
-                const gate = document.getElementById('loading-gate');
                 const content = document.getElementById('app-content');
                 const group = document.getElementById('radio-group');
                 const alertBox = document.getElementById('select-alert');
                 const detailsView = document.getElementById('details-view');
 
-                gate.classList.add('fade-out');
-                setTimeout(function() {
-                    gate.classList.add('hidden');
-                    content.classList.remove('hidden');
-                    window.scrollTo(0, 0);
-                }, 400);
+                content.classList.remove('hidden');
+                window.scrollTo(0, 0);
 
                 if(!events || events.length === 0) { group.innerHTML = '<p style="color:var(--accent-red); font-size:14px; font-weight:bold;">現在、募集中のイベントはありません。</p>'; return; }
                 if(events.length === 1) {
