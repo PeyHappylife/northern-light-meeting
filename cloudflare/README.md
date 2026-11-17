@@ -4,7 +4,7 @@ Cloudflare Pages に直接アップロードするためのファイルです。
 
 - `meeting/index.html` → https://peytv.net/meeting
 - `meeting/admin.html` → https://peytv.net/meeting/admin
-- `meeting/customizer.html` → https://peytv.net/meeting/customizer.html（見た目の調整プレビュー）
+- `meeting/customizer.html` → https://peytv.net/meeting/customizer（見た目の調整プレビュー）
 - `meeting/leadership_honolulu_2027.mp4` → フォームの背景動画
 
 デプロイ手順（Cloudflare ダッシュボード）:
