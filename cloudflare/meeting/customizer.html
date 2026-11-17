@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NorthernLight Meeting 見た目の調整</title>
+  <style>
+    :root { color-scheme: dark; --ink: #eaf6ff; --muted: #a9bed0; --line: rgba(164, 219, 255, .22); --blue: #6dd8ff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: #071526; font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; }
+    body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 55% 40% at 75% 0%, rgba(64, 186, 222, .18), transparent), radial-gradient(ellipse 48% 45% at 0% 90%, rgba(97, 89, 214, .19), transparent); }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: minmax(310px, 380px) minmax(0, 1fr); }
+    .controls { padding: 27px 25px 32px; background: rgba(7, 21, 38, .94); border-right: 1px solid var(--line); overflow-y: auto; max-height: 100vh; }
+    .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 22px; }
+    .brand-mark { width: 38px; height: 38px; border-radius: 12px; background: conic-gradient(from 210deg, #95eaff, #2874be, #a78bfa, #95eaff); box-shadow: 0 0 24px rgba(109, 216, 255, .32); }
+    .brand strong { display: block; font-size: 15px; letter-spacing: .02em; }
+    .brand small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+    h1 { font-size: clamp(27px, 3vw, 34px); line-height: 1.25; margin: 0 0 10px; letter-spacing: -.045em; }
+    .intro { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 0 0 22px; }
+    .group { border-top: 1px solid var(--line); padding-top: 18px; margin-top: 20px; }
+    .group h2 { font-size: 15px; margin: 0 0 12px; font-weight: 700; }
+    .field { margin: 0 0 18px; }
+    .field-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 8px; }
+    .field label { font-size: 13px; font-weight: 600; }
+    output { color: var(--blue); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    input[type=range] { width: 100%; margin: 0; accent-color: #76dcff; cursor: pointer; }
+    .range-ends { display: flex; justify-content: space-between; color: #7895aa; font-size: 10px; margin-top: 3px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; }
+    .actions button, .view-switch button { border: 1px solid var(--line); color: var(--ink); background: rgba(133, 205, 250, .08); padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; }
+    .actions button:hover, .view-switch button:hover { border-color: var(--blue); }
+    .actions .primary { background: #5ac9f5; border-color: #5ac9f5; color: #061728; }
+    .status { color: var(--blue); font-size: 12px; min-height: 1.4em; margin: 11px 0 0; }
+    .notice { margin: 19px 0 0; padding: 12px 13px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); font-size: 11px; line-height: 1.65; }
+    .preview-area { min-width: 0; display: flex; flex-direction: column; background: #0c1b2b; }
+    .preview-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .preview-top strong { font-size: 14px; }
+    .preview-top p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+    .view-switch { display: flex; gap: 5px; }
+    .view-switch button { padding: 8px 12px; }
+    .view-switch button[aria-pressed=true] { background: #5ac9f5; border-color: #5ac9f5; color: #061728; }
+    .preview-stage { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 24px; overflow: auto; }
+    .device { width: min(100%, 960px); height: max(650px, calc(100vh - 126px)); background: #fff; box-shadow: 0 28px 80px rgba(0,0,0,.4); transition: width .2s ease; overflow: hidden; }
+    .device.phone { width: 390px; min-width: 320px; height: 790px; border: 8px solid #1f3345; border-radius: 31px; }
+    iframe { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+    .preview-help { color: var(--muted); text-align: center; margin: 0; padding: 0 12px 14px; font-size: 11px; }
+    :focus-visible { outline: 2px solid #9ae8ff; outline-offset: 3px; }
+    @media (max-width: 850px) {
+      .shell { display: block; }
+      .controls { max-height: none; border-right: 0; border-bottom: 1px solid var(--line); padding: 22px 18px; }
+      .preview-top { padding: 15px 18px; }
+      .preview-stage { padding: 17px; }
+      .device { height: 670px; }
+    }
+    @media (max-width: 450px) {
+      .preview-top { flex-wrap: wrap; }
+      .device.phone { width: 100%; min-width: 0; height: 690px; border-width: 5px; border-radius: 23px; }
+      .actions { grid-template-columns: 1fr 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { .device { transition: none; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="controls" aria-label="見た目の調整">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><div><strong>NorthernLight Meeting</strong><small>フォームの見た目を調整</small></div></div>
+      <h1>光の見え方を、<br>その場で調整。</h1>
+      <p class="intro">スライダーを動かすと、右側の申し込みページにすぐ反映されます。日付を選び、「お申し込み手続きへ進む」を押すと入力画面も確認できます。</p>
+
+      <div class="group"><h2>背景の透け具合</h2>
+        <div class="field"><div class="field-head"><label for="dateOpacity">日付カードの白さ</label><output for="dateOpacity" id="dateOpacity-value"></output></div><input type="range" id="dateOpacity" min="0" max="100" step="0.5" value="37.5"><div class="range-ends"><span>透明</span><span>白</span></div></div>
+        <div class="field"><div class="field-head"><label for="detailOpacity">イベント詳細の白さ</label><output for="detailOpacity" id="detailOpacity-value"></output></div><input type="range" id="detailOpacity" min="0" max="100" step="0.5" value="37.5"><div class="range-ends"><span>透明</span><span>白</span></div></div>
+        <div class="field"><div class="field-head"><label for="formOpacity">入力画面の白さ</label><output for="formOpacity" id="formOpacity-value"></output></div><input type="range" id="formOpacity" min="0" max="100" step="1" value="55"><div class="range-ends"><span>透明</span><span>白</span></div></div>
+        <div class="field"><div class="field-head"><label for="overlayOpacity">入力画面の外側の暗さ</label><output for="overlayOpacity" id="overlayOpacity-value"></output></div><input type="range" id="overlayOpacity" min="0" max="90" step="1" value="62"><div class="range-ends"><span>明るい</span><span>暗い</span></div></div>
+      </div>
+
+      <div class="group"><h2>幅と余白</h2>
+        <div class="field"><div class="field-head"><label for="contentWidth">全体の最大幅</label><output for="contentWidth" id="contentWidth-value"></output></div><input type="range" id="contentWidth" min="280" max="900" step="10" value="850"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
+        <div class="field"><div class="field-head"><label for="formWidth">入力画面の横幅</label><output for="formWidth" id="formWidth-value"></output></div><input type="range" id="formWidth" min="70" max="100" step="1" value="100"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
+        <div class="field"><div class="field-head"><label for="cardPadding">カード内の余白</label><output for="cardPadding" id="cardPadding-value"></output></div><input type="range" id="cardPadding" min="4" max="32" step="1" value="14"><div class="range-ends"><span>少ない</span><span>多い</span></div></div>
+        <div class="field"><div class="field-head"><label for="cardGap">日付カードの間隔</label><output for="cardGap" id="cardGap-value"></output></div><input type="range" id="cardGap" min="0" max="28" step="1" value="10"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
+      </div>
+
+      <div class="group"><h2>文字</h2>
+        <div class="field"><div class="field-head"><label for="dateSize">日付の文字サイズ</label><output for="dateSize" id="dateSize-value"></output></div><input type="range" id="dateSize" min="14" max="34" step="0.2" value="19.2"><div class="range-ends"><span>小さい</span><span>大きい</span></div></div>
+        <div class="field"><div class="field-head"><label for="outlineWidth">文字の縁取り</label><output for="outlineWidth" id="outlineWidth-value"></output></div><input type="range" id="outlineWidth" min="0" max="3" step="0.1" value="1"><div class="range-ends"><span>なし</span><span>太い</span></div></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="primary" id="save">この端末に保存</button>
+        <button type="button" id="reset">初期値に戻す</button>
+        <button type="button" id="copy">設定CSSをコピー</button>
+        <button type="button" id="download">CSSを保存</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <p class="notice">この画面は見た目のプレビューです。「この端末に保存」はこのブラウザ内の調整値を記憶します。公開中の申し込みページは変わりません。設定CSSをコピーして、変更内容を共有できます。</p>
+    </section>
+    <section class="preview-area" aria-label="プレビュー">
+      <div class="preview-top"><div><strong>申し込みページのプレビュー</strong><p>表示を切り替えて、カードや入力画面の見え方を確認</p></div><div class="view-switch" role="group" aria-label="表示幅"><button type="button" id="phone" aria-pressed="true">スマホ</button><button type="button" id="desktop" aria-pressed="false">パソコン</button></div></div>
+      <div class="preview-stage"><div class="device phone" id="device"><iframe id="preview" src="./index.html" title="申し込みフォームのプレビュー"></iframe></div></div>
+      <p class="preview-help">プレビューでは申し込みを送信しないでください。</p>
+    </section>
+  </main>
+  <script>
+    (function () {
+      "use strict";
+      var ids = ["dateOpacity", "detailOpacity", "formOpacity", "overlayOpacity", "contentWidth", "formWidth", "cardPadding", "cardGap", "dateSize", "outlineWidth"];
+      var defaults = { dateOpacity: 37.5, detailOpacity: 37.5, formOpacity: 55, overlayOpacity: 62, contentWidth: 850, formWidth: 100, cardPadding: 14, cardGap: 10, dateSize: 19.2, outlineWidth: 1 };
+      var storageKey = "northern-light-meeting-customizer-v1";
+      var frame = document.getElementById("preview");
+      var status = document.getElementById("status");
+      var current = Object.assign({}, defaults);
+      try {
+        var saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+        if (saved && typeof saved === "object") ids.forEach(function (id) {
+          var input = document.getElementById(id);
+          var n = Number(saved[id]);
+          if (Number.isFinite(n) && n >= Number(input.min) && n <= Number(input.max)) current[id] = n;
+        });
+      } catch (_) {}
+
+      function alpha(n) { return (n / 100).toFixed(3); }
+      function css() {
+        var rules = ["/* NorthernLight Meeting 調整設定 */"];
+        if (current.dateOpacity !== defaults.dateOpacity) {
+          rules.push(".event-radio-label { background: rgba(255,255,255," + alpha(current.dateOpacity) + ") !important; }");
+          rules.push(".event-radio-label.selected { background: rgba(240,249,255," + alpha(current.dateOpacity) + ") !important; }");
+        }
+        if (current.detailOpacity !== defaults.detailOpacity) rules.push(".details-panel { background: rgba(255,255,255," + alpha(current.detailOpacity) + ") !important; }");
+        if (current.formOpacity !== defaults.formOpacity) rules.push(".form-panel:not(.success-full) { background: rgba(255,255,255," + alpha(current.formOpacity) + ") !important; }");
+        if (current.overlayOpacity !== defaults.overlayOpacity) rules.push(".modal-overlay.active { background: rgba(15,23,42," + alpha(current.overlayOpacity) + ") !important; }");
+        if (current.contentWidth !== defaults.contentWidth) rules.push(".container { max-width: " + current.contentWidth + "px !important; }");
+        if (current.formWidth !== defaults.formWidth) rules.push(".form-panel:not(.success-full) { width: calc(" + current.formWidth + "% - 20px) !important; }");
+        if (current.cardPadding !== defaults.cardPadding) {
+          rules.push(".event-radio-label, .details-panel { padding: " + current.cardPadding + "px 12px !important; }");
+          rules.push(".form-panel:not(.success-full) { padding: " + (current.cardPadding + 12) + "px " + (current.cardPadding + 6) + "px !important; }");
+        }
+        if (current.cardGap !== defaults.cardGap) rules.push(".radio-container { gap: " + current.cardGap + "px !important; }");
+        if (current.dateSize !== defaults.dateSize) rules.push(".evlabel-date { font-size: " + current.dateSize + "px !important; }");
+        if (current.outlineWidth !== defaults.outlineWidth) {
+          rules.push(".evlabel-date { -webkit-text-stroke: " + current.outlineWidth + "px #111 !important; }");
+          rules.push("#form-panel-view .form-title, #form-panel-view .form-group > label, #form-panel-view #panel-confirm h3, #form-panel-view #panel-confirm > p, #form-panel-view .confirm-lbl, #form-panel-view .confirm-val { -webkit-text-stroke: " + current.outlineWidth + "px #111 !important; }");
+        }
+        return rules.join("\n");
+      }
+      function apply() {
+        ids.forEach(function (id) {
+          var input = document.getElementById(id);
+          input.value = current[id];
+          document.getElementById(id + "-value").textContent = current[id] + (id.indexOf("Opacity") >= 0 || id === "formWidth" ? "%" : "px");
+        });
+        try {
+          var doc = frame.contentDocument;
+          if (!doc || !doc.head) return;
+          var style = doc.getElementById("northern-light-preview-style");
+          if (!style) { style = doc.createElement("style"); style.id = "northern-light-preview-style"; doc.head.appendChild(style); }
+          style.textContent = css();
+          status.textContent = "";
+        } catch (_) { status.textContent = "プレビューを開けません。同じサイト内でこのページを開いてください。"; }
+      }
+      ids.forEach(function (id) {
+        document.getElementById(id).addEventListener("input", function (event) {
+          current[id] = Number(event.target.value);
+          apply();
+        });
+      });
+      frame.addEventListener("load", function () {
+        try {
+          frame.contentDocument.addEventListener("click", function (event) {
+            if (event.target.closest("#btn-final")) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              status.textContent = "プレビューから申し込みは送信できません。";
+            }
+          }, true);
+        } catch (_) {}
+        apply();
+      });
+      document.getElementById("save").addEventListener("click", function () {
+        try { localStorage.setItem(storageKey, JSON.stringify(current)); status.textContent = "この端末に保存しました。"; }
+        catch (_) { status.textContent = "保存できませんでした。ブラウザの保存設定をご確認ください。"; }
+      });
+      document.getElementById("reset").addEventListener("click", function () { current = Object.assign({}, defaults); apply(); status.textContent = "初期値に戻しました。"; });
+      document.getElementById("copy").addEventListener("click", function () {
+        if (!navigator.clipboard) { status.textContent = "コピーできません。CSSを保存してご利用ください。"; return; }
+        navigator.clipboard.writeText(css()).then(function () { status.textContent = "設定CSSをコピーしました。"; }, function () { status.textContent = "コピーできません。CSSを保存してご利用ください。"; });
+      });
+      document.getElementById("download").addEventListener("click", function () {
+        var link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([css()], { type: "text/css;charset=utf-8" }));
+        link.download = "northern-light-meeting-adjustments.css";
+        link.click();
+        setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+        status.textContent = "設定CSSを保存しました。";
+      });
+      ["phone", "desktop"].forEach(function (view) {
+        document.getElementById(view).addEventListener("click", function () {
+          document.getElementById("device").classList.toggle("phone", view === "phone");
+          document.getElementById("phone").setAttribute("aria-pressed", String(view === "phone"));
+          document.getElementById("desktop").setAttribute("aria-pressed", String(view === "desktop"));
+        });
+      });
+      apply();
+    }());
+  </script>
+</body>
+</html>
