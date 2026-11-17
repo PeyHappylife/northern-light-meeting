@@ -19,6 +19,7 @@
         .event-radio-label input[type="radio"] { margin-right: 12px; width: 20px; height: 20px; accent-color: #0284c7; flex-shrink: 0; }
         .event-radio-label.selected { border-color: #38bdf8; background: rgba(240,249,255,.375); color: #0369a1; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
         .evlabel { text-align: center; line-height: 1.5; }
+        .evlabel-date { font-family: "Arial Black", "Hiragino Kaku Gothic ProN", sans-serif; font-size: 1.2em; font-weight: 900; color: #fff; -webkit-text-fill-color: #fff; -webkit-text-stroke: 1px #111; paint-order: stroke fill; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
         
         .main-layout { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 5px; width: 100%; transition: opacity 0.4s ease; }
         .details-panel { text-align: center; padding: 10px 4px; width: 100%; }
@@ -551,7 +552,7 @@
                 name = idx > 0 ? ev.radioLabel.slice(idx + 1) : '';
             }
             // 日付とタイトルの間で改行
-            return '<span class="evlabel">' + dateStr + '<br>' + name + '</span>';
+            return '<span class="evlabel"><span class="evlabel-date">' + dateStr + '</span><br>' + name + '</span>';
         }
         function onRadioChange(id) {
             document.querySelectorAll('.event-radio-label').forEach(l => l.classList.remove('selected')); document.getElementById(`lbl-${id}`).classList.add('selected');
