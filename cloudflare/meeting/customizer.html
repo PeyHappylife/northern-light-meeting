@@ -26,6 +26,7 @@
     .field label { font-size: 13px; font-weight: 600; }
     output { color: var(--blue); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
     input[type=range] { width: 100%; margin: 0; accent-color: #76dcff; cursor: pointer; }
+    input[type=color] { width: 48px; height: 32px; padding: 2px; border: 1px solid var(--line); border-radius: 7px; background: transparent; cursor: pointer; }
     .range-ends { display: flex; justify-content: space-between; color: #7895aa; font-size: 10px; margin-top: 3px; }
     .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; }
     .actions button, .view-switch button { border: 1px solid var(--line); color: var(--ink); background: rgba(133, 205, 250, .08); padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; }
@@ -74,6 +75,8 @@
         <div class="field"><div class="field-head"><label for="cardGap">カード同士の間隔</label><output for="cardGap" id="cardGap-value"></output></div><input type="range" id="cardGap" min="0" max="28" step="1" value="10"><div class="range-ends"><span>狭い</span><span>広い</span></div></div>
         <div class="field"><div class="field-head"><label for="dateSize">日付の文字サイズ</label><output for="dateSize" id="dateSize-value"></output></div><input type="range" id="dateSize" min="14" max="34" step="0.2" value="19.2"><div class="range-ends"><span>小さい</span><span>大きい</span></div></div>
         <div class="field"><div class="field-head"><label for="dateOutline">日付の文字の縁取り</label><output for="dateOutline" id="dateOutline-value"></output></div><input type="range" id="dateOutline" min="0" max="3" step="0.1" value="1"><div class="range-ends"><span>なし</span><span>太い</span></div></div>
+        <div class="field"><div class="field-head"><label for="dateColor">日付の文字色</label><input type="color" id="dateColor" value="#ffffff"></div></div>
+        <div class="field"><div class="field-head"><label for="dateOutlineColor">日付の縁取り色</label><input type="color" id="dateOutlineColor" value="#111111"></div></div>
       </div>
 
       <div class="group"><h2>イベント詳細カード</h2>
@@ -81,6 +84,8 @@
         <div class="field"><div class="field-head"><label for="detailPadding">内側の余白</label><output for="detailPadding" id="detailPadding-value"></output></div><input type="range" id="detailPadding" min="4" max="32" step="1" value="14"><div class="range-ends"><span>少ない</span><span>多い</span></div></div>
         <div class="field"><div class="field-head"><label for="detailSize">本文の文字サイズ</label><output for="detailSize" id="detailSize-value"></output></div><input type="range" id="detailSize" min="12" max="30" step="1" value="18"><div class="range-ends"><span>小さい</span><span>大きい</span></div></div>
         <div class="field"><div class="field-head"><label for="detailOutline">本文の文字の縁取り</label><output for="detailOutline" id="detailOutline-value"></output></div><input type="range" id="detailOutline" min="0" max="3" step="0.1" value="0"><div class="range-ends"><span>なし</span><span>太い</span></div></div>
+        <div class="field"><div class="field-head"><label for="detailColor">本文の文字色</label><input type="color" id="detailColor" value="#0369a1"></div></div>
+        <div class="field"><div class="field-head"><label for="detailOutlineColor">本文の縁取り色</label><input type="color" id="detailOutlineColor" value="#111111"></div></div>
       </div>
 
       <div class="group"><h2>申込入力画面</h2>
@@ -89,6 +94,8 @@
         <div class="field"><div class="field-head"><label for="formPadding">内側の余白</label><output for="formPadding" id="formPadding-value"></output></div><input type="range" id="formPadding" min="4" max="32" step="1" value="14"><div class="range-ends"><span>少ない</span><span>多い</span></div></div>
         <div class="field"><div class="field-head"><label for="formSize">入力ラベルの文字サイズ</label><output for="formSize" id="formSize-value"></output></div><input type="range" id="formSize" min="14" max="30" step="1" value="21"><div class="range-ends"><span>小さい</span><span>大きい</span></div></div>
         <div class="field"><div class="field-head"><label for="formOutline">入力ラベルの縁取り</label><output for="formOutline" id="formOutline-value"></output></div><input type="range" id="formOutline" min="0" max="3" step="0.1" value="1"><div class="range-ends"><span>なし</span><span>太い</span></div></div>
+        <div class="field"><div class="field-head"><label for="formColor">入力画面の文字色</label><input type="color" id="formColor" value="#ffffff"></div></div>
+        <div class="field"><div class="field-head"><label for="formOutlineColor">入力画面の縁取り色</label><input type="color" id="formOutlineColor" value="#111111"></div></div>
       </div>
 
       <div class="group"><h2>画面全体</h2>
@@ -114,8 +121,10 @@
   <script>
     (function () {
       "use strict";
-      var ids = ["dateOpacity", "datePadding", "cardGap", "dateSize", "dateOutline", "detailOpacity", "detailPadding", "detailSize", "detailOutline", "formOpacity", "formWidth", "formPadding", "formSize", "formOutline", "contentWidth", "overlayOpacity"];
-      var defaults = { dateOpacity: 37.5, datePadding: 14, cardGap: 10, dateSize: 19.2, dateOutline: 1, detailOpacity: 37.5, detailPadding: 14, detailSize: 18, detailOutline: 0, formOpacity: 55, formWidth: 100, formPadding: 14, formSize: 21, formOutline: 1, contentWidth: 850, overlayOpacity: 62 };
+      var numericIds = ["dateOpacity", "datePadding", "cardGap", "dateSize", "dateOutline", "detailOpacity", "detailPadding", "detailSize", "detailOutline", "formOpacity", "formWidth", "formPadding", "formSize", "formOutline", "contentWidth", "overlayOpacity"];
+      var colorIds = ["dateColor", "dateOutlineColor", "detailColor", "detailOutlineColor", "formColor", "formOutlineColor"];
+      var ids = numericIds.concat(colorIds);
+      var defaults = { dateOpacity: 37.5, datePadding: 14, cardGap: 10, dateSize: 19.2, dateOutline: 1, dateColor: "#ffffff", dateOutlineColor: "#111111", detailOpacity: 37.5, detailPadding: 14, detailSize: 18, detailOutline: 0, detailColor: "#0369a1", detailOutlineColor: "#111111", formOpacity: 55, formWidth: 100, formPadding: 14, formSize: 21, formOutline: 1, formColor: "#ffffff", formOutlineColor: "#111111", contentWidth: 850, overlayOpacity: 62 };
       var storageKey = "northern-light-meeting-customizer-v2";
       var frame = document.getElementById("preview");
       var status = document.getElementById("status");
@@ -129,16 +138,19 @@
             saved.dateOutline = saved.formOutline = saved.outlineWidth;
           }
         }
-        if (saved && typeof saved === "object") ids.forEach(function (id) {
+        if (saved && typeof saved === "object") numericIds.forEach(function (id) {
           var input = document.getElementById(id);
           var n = Number(saved[id]);
           if (Number.isFinite(n) && n >= Number(input.min) && n <= Number(input.max)) current[id] = n;
+        });
+        if (saved && typeof saved === "object") colorIds.forEach(function (id) {
+          if (typeof saved[id] === "string" && /^#[0-9a-f]{6}$/i.test(saved[id])) current[id] = saved[id];
         });
       } catch (_) {}
 
       function alpha(n) { return (n / 100).toFixed(3); }
       function css() {
-        var rules = ["/* NorthernLight Meeting 調整設定 */"];
+        var rules = ["/* NorthernLight Meeting 調整設定 */", ".selector-section { width: 100% !important; max-width: 576px !important; }", ".event-radio-label { width: calc(100% + 30px) !important; max-width: 576px !important; }", "@media (min-width: 769px) { .event-radio-label { width: calc(100% + 34px) !important; } }", ".details-panel { width: 100% !important; max-width: 576px !important; }", ".form-panel:not(.success-full) { width: calc(100% + 8px) !important; max-width: 576px !important; }"];
         if (current.dateOpacity !== defaults.dateOpacity) {
           rules.push(".event-radio-label { background: rgba(255,255,255," + alpha(current.dateOpacity) + ") !important; }");
           rules.push(".event-radio-label.selected { background: rgba(240,249,255," + alpha(current.dateOpacity) + ") !important; }");
@@ -146,16 +158,19 @@
         if (current.datePadding !== defaults.datePadding) rules.push(".event-radio-label { padding: " + current.datePadding + "px 12px !important; }");
         if (current.cardGap !== defaults.cardGap) rules.push(".radio-container { gap: " + current.cardGap + "px !important; }");
         if (current.dateSize !== defaults.dateSize) rules.push(".evlabel-date { font-size: " + current.dateSize + "px !important; }");
-        if (current.dateOutline !== defaults.dateOutline) rules.push(".evlabel-date { -webkit-text-stroke: " + current.dateOutline + "px #111 !important; }");
+        if (current.dateColor !== defaults.dateColor) rules.push(".evlabel-date { color: " + current.dateColor + " !important; -webkit-text-fill-color: " + current.dateColor + " !important; }");
+        if (current.dateOutline !== defaults.dateOutline || current.dateOutlineColor !== defaults.dateOutlineColor) rules.push(".evlabel-date { -webkit-text-stroke: " + current.dateOutline + "px " + current.dateOutlineColor + " !important; }");
         if (current.detailOpacity !== defaults.detailOpacity) rules.push(".details-panel { background: rgba(255,255,255," + alpha(current.detailOpacity) + ") !important; }");
         if (current.detailPadding !== defaults.detailPadding) rules.push(".details-panel { padding: " + current.detailPadding + "px 12px !important; }");
-        if (current.detailSize !== defaults.detailSize) rules.push(".details-panel .event-time, .details-panel .event-venue, .details-panel .event-guest, .details-panel .event-description { font-size: " + current.detailSize + "px !important; }");
-        if (current.detailOutline !== defaults.detailOutline) rules.push(".details-panel .event-date, .details-panel .event-time, .details-panel .event-venue, .details-panel .event-guest, .details-panel .event-description { -webkit-text-stroke: " + current.detailOutline + "px #111 !important; paint-order: stroke fill; }");
+        if (current.detailSize !== defaults.detailSize) rules.push(".details-panel .event-date, .details-panel .event-time, .details-panel .event-venue, .details-panel .event-guest, .details-panel .event-description { font-size: " + current.detailSize + "px !important; }");
+        if (current.detailColor !== defaults.detailColor) rules.push(".details-panel .event-date, .details-panel .event-time, .details-panel .event-venue, .details-panel .event-guest, .details-panel .event-description { color: " + current.detailColor + " !important; -webkit-text-fill-color: " + current.detailColor + " !important; }");
+        if (current.detailOutline !== defaults.detailOutline || current.detailOutlineColor !== defaults.detailOutlineColor) rules.push(".details-panel .event-date, .details-panel .event-time, .details-panel .event-venue, .details-panel .event-guest, .details-panel .event-description { -webkit-text-stroke: " + current.detailOutline + "px " + current.detailOutlineColor + " !important; paint-order: stroke fill; }");
         if (current.formOpacity !== defaults.formOpacity) rules.push(".form-panel:not(.success-full) { background: rgba(255,255,255," + alpha(current.formOpacity) + ") !important; }");
         if (current.formWidth !== defaults.formWidth) rules.push(".form-panel:not(.success-full) { width: calc(" + current.formWidth + "% - 20px) !important; }");
         if (current.formPadding !== defaults.formPadding) rules.push(".form-panel:not(.success-full) { padding: " + (current.formPadding + 12) + "px " + (current.formPadding + 6) + "px !important; }");
         if (current.formSize !== defaults.formSize) rules.push("#form-panel-view .form-group.lg > label { font-size: " + current.formSize + "px !important; }");
-        if (current.formOutline !== defaults.formOutline) rules.push("#form-panel-view .form-title, #form-panel-view .form-group > label, #form-panel-view #panel-confirm h3, #form-panel-view #panel-confirm > p, #form-panel-view .confirm-lbl, #form-panel-view .confirm-val { -webkit-text-stroke: " + current.formOutline + "px #111 !important; }");
+        if (current.formColor !== defaults.formColor) rules.push("#form-panel-view .form-title, #form-panel-view .form-group > label, #form-panel-view #panel-confirm h3, #form-panel-view #panel-confirm > p, #form-panel-view .confirm-lbl, #form-panel-view .confirm-val { color: " + current.formColor + " !important; -webkit-text-fill-color: " + current.formColor + " !important; }");
+        if (current.formOutline !== defaults.formOutline || current.formOutlineColor !== defaults.formOutlineColor) rules.push("#form-panel-view .form-title, #form-panel-view .form-group > label, #form-panel-view #panel-confirm h3, #form-panel-view #panel-confirm > p, #form-panel-view .confirm-lbl, #form-panel-view .confirm-val { -webkit-text-stroke: " + current.formOutline + "px " + current.formOutlineColor + " !important; paint-order: stroke fill; }");
         if (current.contentWidth !== defaults.contentWidth) rules.push(".container { max-width: " + current.contentWidth + "px !important; }");
         if (current.overlayOpacity !== defaults.overlayOpacity) rules.push(".modal-overlay.active { background: rgba(15,23,42," + alpha(current.overlayOpacity) + ") !important; }");
         return rules.join("\n");
@@ -164,7 +179,7 @@
         ids.forEach(function (id) {
           var input = document.getElementById(id);
           input.value = current[id];
-          document.getElementById(id + "-value").textContent = current[id] + (id.indexOf("Opacity") >= 0 || id === "formWidth" ? "%" : "px");
+          if (numericIds.indexOf(id) >= 0) document.getElementById(id + "-value").textContent = current[id] + (id.indexOf("Opacity") >= 0 || id === "formWidth" ? "%" : "px");
         });
         try {
           var doc = frame.contentDocument;
@@ -175,9 +190,15 @@
           status.textContent = "";
         } catch (_) { status.textContent = "プレビューを開けません。同じサイト内でこのページを開いてください。"; }
       }
-      ids.forEach(function (id) {
+      numericIds.forEach(function (id) {
         document.getElementById(id).addEventListener("input", function (event) {
           current[id] = Number(event.target.value);
+          apply();
+        });
+      });
+      colorIds.forEach(function (id) {
+        document.getElementById(id).addEventListener("input", function (event) {
+          current[id] = event.target.value;
           apply();
         });
       });
