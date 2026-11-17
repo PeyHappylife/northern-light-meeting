@@ -93,6 +93,10 @@
         body.modal-open .main-title { animation: none !important; will-change: auto !important; }
         /* スマホは重い背景ぼかしを無効化（GPU負荷によるフリーズを防止／PCはぼかし維持） */
         @media (max-width: 640px) {
+            body { min-height: 100svh; min-height: 100dvh; }
+            #loading-gate { margin: auto; }
+            #app-content { display: flex; flex-direction: column; justify-content: center; min-height: 100svh; min-height: 100dvh; margin: 0; }
+            #app-content > .selector-section { margin: 0; }
             .modal-overlay.active.anim-neon,
             .modal-overlay.active.anim-confetti,
             .modal-overlay.active.anim-stardust,
@@ -342,9 +346,7 @@
             <p id="select-alert" class="select-alert hidden">日付を選んでください</p>
             <div id="radio-group" class="radio-container"></div>
         </div>
-        <div id="main-layout" class="main-layout">
-            <div id="placeholder-view" class="placeholder-panel">日付選ぶと詳細が出てきます。</div>
-            
+        <div id="main-layout" class="main-layout hidden">
             <!-- 詳細パネル -->
             <div id="details-view" class="details-panel hidden">
                 <div class="badge">SPECIAL EVENT</div>
@@ -576,7 +578,6 @@
                 const content = document.getElementById('app-content');
                 const group = document.getElementById('radio-group');
                 const alertBox = document.getElementById('select-alert');
-                const placeholderView = document.getElementById('placeholder-view');
                 const detailsView = document.getElementById('details-view');
 
                 gate.classList.add('fade-out');
@@ -589,9 +590,9 @@
                 if(!events || events.length === 0) { group.innerHTML = '<p style="color:var(--accent-red); font-size:14px; font-weight:bold;">現在、募集中のイベントはありません。</p>'; return; }
                 if(events.length === 1) {
                     alertBox.classList.add('hidden'); const ev = events[0]; const formattedLabel = formatEventLabel(ev); group.innerHTML = `<label class="event-radio-label selected"><input type="radio" name="ev-sel" value="${ev.id}" checked> ${formattedLabel}</label>`; selectEvent(ev);
-                    placeholderView.classList.add('hidden'); detailsView.classList.remove('hidden');
+                    document.getElementById('main-layout').classList.remove('hidden'); detailsView.classList.remove('hidden');
                 } else {
-                    alertBox.classList.remove('hidden'); placeholderView.classList.remove('hidden'); detailsView.classList.add('hidden');
+                    alertBox.classList.remove('hidden'); detailsView.classList.add('hidden');
                     let html = ''; events.forEach(ev => { const formattedLabel = formatEventLabel(ev); html += `<label class="event-radio-label" id="lbl-${ev.id}"><input type="radio" name="ev-sel" value="${ev.id}" onchange="onRadioChange('${ev.id}')"> ${formattedLabel}</label>`; }); group.innerHTML = html;
                 }
             } catch(e) {
@@ -616,7 +617,7 @@
             const ev = globalEvents.find(e => e.id === id);
             if(ev) {
                 selectEvent(ev);
-                document.getElementById('placeholder-view').classList.add('hidden');
+                document.getElementById('main-layout').classList.remove('hidden');
                 document.getElementById('details-view').classList.remove('hidden');
                 // 日付選択部が画面から消えるまで、3秒かけてゆっくり上へスクロール（詳細を画面トップへ）
                 setTimeout(function() {
