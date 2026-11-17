@@ -5,7 +5,10 @@
     <style>
         :root { --text-main: #1e293b; --text-blue: #1d4ed8; --text-muted: #64748b; --accent-green: #0ed59e; --accent-red: #ef4444; --card-bg: #ffffff; --input-border: #e2e8f0; }
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; background: min(100vh, 100vw) radial-gradient(circle at 10% 10%, #e0f2fe 0%, #f3e8ff 40%, #ffffff 70%, #fae8ff 100%); background-attachment: fixed; color: var(--text-main); display: flex; flex-direction: column; align-items: center; min-height: 100vh; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; background: transparent; background-attachment: fixed; color: var(--text-main); display: flex; flex-direction: column; align-items: center; min-height: 100vh; -webkit-text-size-adjust: 100%; overflow-x: hidden; position: relative; isolation: isolate; }
+        .video-bg-container { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: radial-gradient(circle at 10% 10%, #e0f2fe 0%, #f3e8ff 40%, #ffffff 70%, #fae8ff 100%); }
+        .bg-video { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+        .video-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.44) 0%, rgba(248,250,252,.60) 50%, rgba(243,232,255,.55) 100%); }
         
         .container { width: 100%; max-width: 600px; padding: 16px 12px; box-sizing: border-box; }
         
@@ -319,6 +322,10 @@
             .note-blue { font-size: 14px; }
         }
     </style></head><body>
+    <div class="video-bg-container" aria-hidden="true">
+        <video class="bg-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" src="/meeting/leadership_honolulu_2027.mp4"></video>
+        <div class="video-overlay"></div>
+    </div>
     
     <!-- 初期読込専用の完全隔離ゲート -->
     <div id="loading-gate" class="loading-gate">

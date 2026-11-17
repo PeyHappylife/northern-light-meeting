@@ -4,11 +4,15 @@ Cloudflare Pages に直接アップロードするためのファイルです。
 
 - `meeting/index.html` → https://peytv.net/meeting
 - `meeting/admin.html` → https://peytv.net/meeting/admin
+- `meeting/leadership_honolulu_2027.mp4` → フォームの背景動画
 
 デプロイ手順（Cloudflare ダッシュボード）:
 1. Workers & Pages → Create → Pages → Upload assets（直接アップロード）
-2. プロジェクト名を入力し、`cloudflare/meeting` フォルダごとアップロード
-3. 独自ドメイン peytv.net を Custom domain に設定し、パスを `/meeting` で公開
-   （または peytv.net の Pages プロジェクトに meeting フォルダを配置）
+2. プロジェクト `northern-light-meeting` に `cloudflare/meeting` フォルダの中身をアップロード
+3. Pages の `*.pages.dev` ホストはそのまま使い、`peytv.net` を Pages の Custom domain に設定しない
+4. 既存の `peytv-wp` Worker で次のパスだけを Pages へ渡す。他のパスは既存処理を保つ
+   - `/meeting` → Pages `/`
+   - `/meeting/admin` → Pages `/admin`
+   - `/meeting/<asset>` → Pages の同名ファイル（背景動画など）
 
-※ フォームは GAS の API（script.google.com）に通信するため、サーバー側の変更は不要です。
+※ フォームは GAS の API（script.google.com）に通信します。動画などの静的ファイルも Pages へ渡す Worker 経路が必要です。
