@@ -83,7 +83,7 @@ npx wrangler pages deploy meeting --project-name=<Pages のプロジェクト名
 - **メールのリンク**：すでに `https://peytv.net/meeting` に統一済み（`gas_northernlight.gs`）。ただし GAS 本体への貼り直しは未実施です（§5 の1）。
 
 ### 12月1日までのチェックリスト
-1. 11月末までに、旧ページ（peyn8n）で申し込みを受けていないか確認し、旧ページの申込者データを必要に応じて控える（旧システム側のデータは当方から取得できません）。
+1. 11月末までに、旧ページ（peyn8n）の申込データを控える必要はありません。旧ページの申し込みは、新ページと同じ `MTG管理シート` に入ることを確認済みです（§10）。
 2. GAS 本体を更新して、メールのリンクを peytv に揃える（§5 の1）。
 3. github.io の転送先を決める（上記の2択）。
 4. 11月末に、旧 peyn8n が止まっていることを確認する。
@@ -92,3 +92,17 @@ npx wrangler pages deploy meeting --project-name=<Pages のプロジェクト名
 ### 12月1日以降の注意
 - 旧 URL（peyn8n）を、メールや SNS などで案内していないか確認する。残っていれば peytv に差し替える。
 - 旧 URL の申し込みは受けられなくなるため、「旧 URL からアクセスした人」には peytv の URL を案内する。
+
+## 10. 旧ページと新ページの接続関係（確認済み 2026-11-20）
+
+- 旧ページ `https://peyn8n.xvps.jp/d/m/` の申し込み先：GAS `AKfycbwY5jDRFFRv8LkmNTrFVs0i2K2bmJZ_ntdLRZXU4nJISihxXpW_YjmT4yzq2hvywqHQ/exec`
+- 新ページ（peytv）の申し込み先：GAS `AKfycbwnGJydyJhohPEhfTPQNRDfmMTBzSStfHiJF3iYSQctNLk8k4EPCeMqMov9vXU7O-RxTA`
+- **両方とも、同じ `MTG管理シート`（`1CdZSj0x…`）に書き込みます。**
+  - 確認方法：旧 GAS に1件テスト申し込み（`20270209 岡田薫` シート）→ 行が入り、申込メールが「送信済み」になることを確認 → テスト行だけ削除。
+  - 両方の GAS は、同じ3イベント（11/24・12/16・2027/02/09）を返します。
+- そのため、11月末までに旧ページで入った申し込みも、新ページの申し込みと同じシートで一覧できます。
+- 環境の許可リストに `peyn8n.xvps.jp` を追加済みです（この環境から旧ページを確認するため）。
+
+### 12月1日以降に確認すること
+- 旧 GAS（`AKfycbwY5jD…`）が、11月末以降も必要かどうか。旧ページが止まれば不要です。
+- 旧 GAS が残っていて、誰かが旧 URL から申し込めてしまう場合は、旧 GAS 側を停止するか、peytv の URL を案内してください。
