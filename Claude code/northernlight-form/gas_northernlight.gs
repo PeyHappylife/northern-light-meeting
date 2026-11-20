@@ -51,7 +51,6 @@ function doGet(e) {
       case 'deleteEvent':             return json(deleteEvent(p));
       case 'registerParticipant':     return json(registerParticipant(p));
       case 'sendAllToParticipant':    return json(sendAllToParticipant(p));
-      case 'installTemplates':        return json(installTemplates());
       case 'getMailTimes':            return json(getMailTimes());
       case 'setMailTime':             return json(setMailTime(p));
       default:                        return json({ error: 'Unknown action: ' + action });
@@ -388,7 +387,7 @@ function sendScheduledEmails() {
 
       const data = buildMailData(row, eventDate, eventInfo);
       try {
-        MailApp.sendEmail({ to: email, subject: applyTemplate(template.subject, data), htmlBody: applyTemplate(template.body, data) });
+        sendMail_(email, template.subject, template.body, data);
         sheet.getRange(i + 1, timing.col).setValue('送信済み');   // 種別ごとの列へ記入
         Logger.log('送信: ' + timing.tpl + ' → ' + email);
       } catch (e) { Logger.log('送信エラー: ' + e + ' [' + email + ']'); }
@@ -396,75 +395,9 @@ function sendScheduledEmails() {
   });
 }
 
-// ─────────────────────────────────────────────
-//  メール本文テンプレを一括投入（メール内容シートのC列=本文を上書き）
-//  エディタで installTemplates を実行、または ?action=installTemplates
-// ─────────────────────────────────────────────
-function installTemplates() {
-  const ss = getSpreadsheet();
-  const sheet = ss.getSheetByName(MAIL_TEMPLATE_SHEET);
-  if (!sheet) throw new Error('メール内容シートがありません');
-
-  const block =
-    '──────────────\n' +
-    'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n[会場詳細]\nゲスト：[ゲスト]\n\n' +
-    'フルネーム：[名前]\nフリガナ：[フリガナ]\nメールアドレス：[メール]\n電話番号：[電話]\n' +
-    'アップライン：[アップライン]\n一般予定人数：[一般予定人数]\n枚数：[枚数]\n金額：[金額]\n' +
-    '──────────────';
-  const eventBlock =
-    '──────────────\n' +
-    'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n[会場詳細]\nゲスト：[ゲスト]\n' +
-    '──────────────';
-  const link = '追加はこちら\n→ https://peytv.net/meeting';
-
-  const T = {
-    'オーダー受付メール':
-      '[名前] 様\n\nこの度は[イベント名]にお申し込みいただき、誠にありがとうございます。\n下記の内容で受け付けいたしました。\n\n' +
-      block + '\n\n' + link + '\n\n当日のご来場を心よりお待ちしております。',
-    '7日前リマインダーメール':
-      '[名前] 様\n\n[イベント名]の開催まで、あと7日となりました。\nお申し込み内容を再度ご確認ください。\n\n' +
-      block + '\n\n' + link + '\n\n当日お会いできることを楽しみにしております。',
-    '3日前リマインダーメール':
-      '[名前] 様\n\n[イベント名]の開催まで、あと3日となりました。\n下記の内容をご確認の上、お気をつけてお越しください。\n\n' +
-      block + '\n\n' + link + '\n\nご来場を心よりお待ちしております。',
-    '前日リマインダーメール':
-      '[名前] 様\n\nいよいよ明日、[イベント名]を開催いたします。\n下記の内容を今一度ご確認ください。\n\n' +
-      block + '\n\n' + link + '\n\nお気をつけてお越しください。お会いできるのを楽しみにしております。',
-    '当日感謝メール':
-      '[名前] 様\n本日は[イベント名]にご参加いただき、誠にありがとうございました。\n\n' +
-      '次回はこちら\n→ https://peytv.net/meeting\n\n' +
-      'またのご参加を、スタッフ一同、心よりお待ちしております。',
-    '次回リマインドメール':
-      '[名前] 様\n\n先日は[イベント名]にご参加いただき、誠にありがとうございました。\n次回開催のご案内です。ぜひまたお越しください。\n\n' +
-      eventBlock + '\n\nオーダーはこちら\n→ https://peytv.net/meeting\n\n' +
-      'スタッフ一同、心よりお待ちしております。'
-  };
-
-  // 件名（B列）。[MMDD]＝開催日MM/DD、[イベント名]＝H列
-  const S = {
-    'オーダー受付メール':       '【感謝】[MMDD] [イベント名]',
-    '7日前リマインダーメール':   '【あと7日】[MMDD] [イベント名]',
-    '3日前リマインダーメール':   '【あと3日】[MMDD] [イベント名]',
-    '前日リマインダーメール':     '【とうとう明日】[MMDD] [イベント名]',
-    '当日感謝メール':            '【ご参加ありがとうございました】[MMDD] [イベント名]',
-    '次回リマインドメール':       '【次回】[MMDD] [イベント名]'
-  };
-
-  const rows = sheet.getDataRange().getValues();
-  const done = [];
-  Object.keys(T).forEach(function(name) {
-    for (let i = 1; i < rows.length; i++) {
-      const nm = String(rows[i][0]).trim();
-      if (nm === name || nm === name + 'の件名') {
-        if (S[name]) sheet.getRange(i + 1, 2).setValue(S[name]);  // B列=件名を上書き
-        sheet.getRange(i + 1, 3).setValue(T[name]);  // C列=本文を上書き
-        done.push(nm);
-        break;
-      }
-    }
-  });
-  return { message: done.length + '件のテンプレ本文を更新しました。', updated: done };
-}
+// 【重要】メールの件名・本文の正本は、スプレッドシート「メール内容」シートだけ。
+// コードからシートを上書きする機能（installTemplates）は、古い文面が戻る事故のため削除した（2026-11-20）。
+// 文面を直すときはシートを直接直す。
 
 // ─────────────────────────────────────────────
 //  メール送信権限(script.send_mail)を承認するための関数。
@@ -518,7 +451,7 @@ function sendAllToParticipant(p) {
       const tpl = getMailTemplate(t.tpl);
       if (!tpl) { diag.push(t.tpl + ': テンプレ未検出'); return; }
       try {
-        MailApp.sendEmail({ to: email, subject: applyTemplate(tpl.subject, data), htmlBody: applyTemplate(tpl.body, data) });
+        sendMail_(email, tpl.subject, tpl.body, data);
         sheet.getRange(i + 1, t.col).setValue('送信済み');
         mails++;
         diag.push(t.tpl + ': 送信OK');
@@ -558,7 +491,7 @@ function sendConfirmationEmail(p, eventInfo) {
     guest:     eventInfo ? eventInfo.guest : '',
     eventName: eventInfo ? eventInfo.eventName : ''
   };
-  MailApp.sendEmail({ to: email, subject: applyTemplate(tpl.subject, data), htmlBody: applyTemplate(tpl.body, data) });
+  sendMail_(email, tpl.subject, tpl.body, data);
 }
 
 // ─────────────────────────────────────────────
@@ -632,13 +565,10 @@ function formatYen(n) {
 
 function applyTemplate(template, data) {
   let r = String(template || '');
-  // 【削除禁止】申込内容・イベント情報の枠には、必ず会場詳細（会場名・住所・地図）を入れる。
-  // テンプレから [会場詳細] が消えていたら自動で戻す。
-  if (r.indexOf('[会場詳細]') < 0 && r.indexOf('ゲスト：[ゲスト]') >= 0) {
-    r = /会場：\[会場\]/.test(r)
-      ? r.replace(/会場：\[会場\]/, '[会場詳細]')
-      : r.replace('ゲスト：[ゲスト]', '[会場詳細]\nゲスト：[ゲスト]');
-  }
+  // 【削除禁止】会場の案内（地図画像。画像が無い会場は会場詳細の文字）は必ずメール末尾に入れる。
+  // テンプレから [会場画像] が消えていたら末尾に戻す。
+  if (r.indexOf('[会場画像]') < 0 && r.indexOf('ゲスト：[ゲスト]') >= 0) r += '\n\n[会場画像]';
+  r = r.split('[会場画像]').join(venueBlockHtml_(data));
   // 一般予定人数(note)が空のときは、その語を含む断片(改行/<br>区切り)ごと削除
   if (!data.note) {
     r = r.split(/(?:<br\s*\/?>|\n)/i).filter(function(seg) {
@@ -685,4 +615,48 @@ function buildMailData(row, eventDate, info) {
     guest:     info ? info.guest     : '',
     eventName: info ? info.eventName : ''
   };
+}
+
+
+// ─────────────────────────────────────────────
+//  会場の案内画像（タップで Google マップ）
+// ─────────────────────────────────────────────
+function getVenueImageKey_(venueName) {
+  const n = String(venueName || '');
+  if (n.indexOf('エルプラザ') >= 0) return 'elplaza';
+  if (n.indexOf('ふれあい') >= 0) return 'fureai152';
+  return '';
+}
+function venueBlockHtml_(data) {
+  const key = getVenueImageKey_(data.venue);
+  const detail = String(data.venueDetail || '');
+  const m = detail.match(/https:\/\/maps\.app\.goo\.gl\/[A-Za-z0-9]+/);
+  if (!key || !VENUE_IMAGES_B64[key]) return detail;      // 画像が無い会場は文字の会場詳細
+  const img = '<img src="cid:venueMap" alt="会場案内（タップでGoogleマップ）" style="width:100%;max-width:600px;height:auto;border:0">';
+  return m ? '<a href="' + m[0] + '">' + img + '</a>' : img;
+}
+function sendMail_(to, subjectTpl, bodyTpl, data) {
+  const html = applyTemplate(bodyTpl, data);
+  const opt = { to: to, subject: applyTemplate(subjectTpl, data), htmlBody: html };
+  const key = getVenueImageKey_(data.venue);
+  if (html.indexOf('cid:venueMap') >= 0 && key && VENUE_IMAGES_B64[key]) {
+    opt.inlineImages = { venueMap: Utilities.newBlob(Utilities.base64Decode(VENUE_IMAGES_B64[key]), 'image/jpeg', 'venue.jpg') };
+  }
+  MailApp.sendEmail(opt);
+}
+
+// テスト送信（happylifellc@gmail.com 宛のみ・6種）。?action=testVenueMail&venue=会場名
+function testVenueMail_(venueName) {
+  const to = 'happylifellc@gmail.com';
+  const info = { eventName: 'MTG（テスト）', date: '2026/11/24', dateMd: '11月24日', time: '19:00〜21:00',
+    venue: venueName, venueDetail: getVenueDetail_(venueName), guest: 'テストゲスト', advancePrice: 1500, showNote: true };
+  const data = buildMailData(['', 'テスト 太郎', 'テスト タロウ', to, '090-0000-0000', '', '2', '1枚', '', 'テストアップライン'], new Date('2026/11/24'), info);
+  const names = ['オーダー受付メール','7日前リマインダーメール','3日前リマインダーメール','前日リマインダーメール','当日感謝メール','次回リマインドメール'];
+  const res = [];
+  names.forEach(function(n) {
+    const t = getMailTemplate(n);
+    if (!t) { res.push(n + ': テンプレなし'); return; }
+    try { sendMail_(to, t.subject, t.body, data); res.push(n + ': 送信OK'); } catch (e) { res.push(n + ': NG ' + e); }
+  });
+  return res;
 }
