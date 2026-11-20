@@ -68,3 +68,27 @@ npx wrangler pages deploy meeting --project-name=<Pages のプロジェクト名
 - テストは**自分のメールアドレス**で行い、テスト行だけを削除する。
 - 実際の申し込み行は消さない。
 - テストの後は、必ずシートで削除できたかを確認する。
+
+## 9. 移行期間：11月末まで2つ併存、12月1日から peytv のみ
+
+### 状況
+- **旧ページ（過去のノーザンライトミーティングの申し込み）**：`https://peyn8n.xvps.jp/d/m/`（管理画面は `…/d/m/admin.html`）。**2026年11月末で使えなくなる**（外部サービス・当方では管理不可）。
+- **新ページ（peytv）**：`https://peytv.net/meeting`（管理画面は `https://peytv.net/meeting/admin`）。**12月1日以降はこちらだけが有効**。
+- 11月中は、2つの申し込みフォームが同時に存在します。
+
+### 2つの入口の扱い
+- **GitHub Pages**（https://peyhappylife.github.io/northern-light-meeting/）：現在は peytv.net/meeting に転送しています（`docs/index.html`）。
+  - 旧ページを11月中も github.io から開けるようにしたい場合は、`docs/index.html` の転送先を `https://peyn8n.xvps.jp/d/m/` に戻し、**12月1日（JST）に `https://peytv.net/meeting` へ戻す**必要があります。この切り替えは自動ではないため、手動で行うか、その日に作業を依頼してください。
+  - 旧ページを github.io から開かせる必要がなければ、現状（peytv 転送）のままで問題ありません。
+- **メールのリンク**：すでに `https://peytv.net/meeting` に統一済み（`gas_northernlight.gs`）。ただし GAS 本体への貼り直しは未実施です（§5 の1）。
+
+### 12月1日までのチェックリスト
+1. 11月末までに、旧ページ（peyn8n）で申し込みを受けていないか確認し、旧ページの申込者データを必要に応じて控える（旧システム側のデータは当方から取得できません）。
+2. GAS 本体を更新して、メールのリンクを peytv に揃える（§5 の1）。
+3. github.io の転送先を決める（上記の2択）。
+4. 11月末に、旧 peyn8n が止まっていることを確認する。
+5. **12月1日**：peytv.net/meeting のフォームと管理画面が動いていることを確認する（§5 の3 のテスト申し込みを含む）。github.io の転送先が peytv になっていることを確認する。
+
+### 12月1日以降の注意
+- 旧 URL（peyn8n）を、メールや SNS などで案内していないか確認する。残っていれば peytv に差し替える。
+- 旧 URL の申し込みは受けられなくなるため、「旧 URL からアクセスした人」には peytv の URL を案内する。
