@@ -407,13 +407,13 @@ function installTemplates() {
 
   const block =
     '──────────────\n' +
-    'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n会場：[会場]\nゲスト：[ゲスト]\n\n' +
+    'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n[会場詳細]\nゲスト：[ゲスト]\n\n' +
     'フルネーム：[名前]\nフリガナ：[フリガナ]\nメールアドレス：[メール]\n電話番号：[電話]\n' +
     'アップライン：[アップライン]\n一般予定人数：[一般予定人数]\n枚数：[枚数]\n金額：[金額]\n' +
     '──────────────';
   const eventBlock =
     '──────────────\n' +
-    'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n会場：[会場]\nゲスト：[ゲスト]\n' +
+    'イベント名：[イベント名]\n開催日：[日付]\n時間：[日時]\n[会場詳細]\nゲスト：[ゲスト]\n' +
     '──────────────';
   const link = '追加はこちら\n→ https://peytv.net/meeting';
 
@@ -564,6 +564,24 @@ function sendConfirmationEmail(p, eventInfo) {
 //  ユーティリティ
 // ─────────────────────────────────────────────
 
+// 会場マスタ（A=会場名 / B=会場詳細：会場名・住所・地図リンク）から会場詳細を返す。
+// 該当が無いときも会場名だけは必ず返す（メールから会場情報が消えないようにする）
+function getVenueDetail_(venueName) {
+  const name = String(venueName || '').trim();
+  try {
+    const sh = getSpreadsheet().getSheetByName('会場マスタ');
+    if (sh) {
+      const rows = sh.getDataRange().getValues();
+      for (let i = 1; i < rows.length; i++) {
+        if (String(rows[i][0] || '').trim() === name && String(rows[i][1] || '').trim()) {
+          return String(rows[i][1]).trim();
+        }
+      }
+    }
+  } catch (e) { Logger.log('会場マスタ取得失敗: ' + e); }
+  return name ? '会場：' + name : '';
+}
+
 function getEventInfoBySheetName(sheetName) {
   const ss = getSpreadsheet();
   const ls = ss.getSheetByName(EVENT_LIST_SHEET);
@@ -581,6 +599,7 @@ function getEventInfoBySheetName(sheetName) {
       dateMd:    Utilities.formatDate(ed, 'Asia/Tokyo', 'MM月dd日'),  // 件名用 MM/DD
       time:      String(rows[i][1] || 'OPEN 19:00 / START 19:30'), // B列: 時間
       venue:     String(rows[i][2] || ''),                  // C列: 開催場所
+      venueDetail: getVenueDetail_(rows[i][2]),             // 会場マスタ: 会場名・住所・地図
       guest:     String(rows[i][3] || ''),                  // D列: ゲスト名
       details:   details0,
       advancePrice: pm ? parseInt(pm[1].replace(/,/g, ''), 10) : 0, // 前売り単価
@@ -612,6 +631,13 @@ function formatYen(n) {
 
 function applyTemplate(template, data) {
   let r = String(template || '');
+  // 【削除禁止】申込内容・イベント情報の枠には、必ず会場詳細（会場名・住所・地図）を入れる。
+  // テンプレから [会場詳細] が消えていたら自動で戻す。
+  if (r.indexOf('[会場詳細]') < 0 && r.indexOf('ゲスト：[ゲスト]') >= 0) {
+    r = /会場：\[会場\]/.test(r)
+      ? r.replace(/会場：\[会場\]/, '[会場詳細]')
+      : r.replace('ゲスト：[ゲスト]', '[会場詳細]\nゲスト：[ゲスト]');
+  }
   // 一般予定人数(note)が空のときは、その語を含む断片(改行/<br>区切り)ごと削除
   if (!data.note) {
     r = r.split(/(?:<br\s*\/?>|\n)/i).filter(function(seg) {
@@ -628,7 +654,7 @@ function applyTemplate(template, data) {
     'メール': 'email', 'メールアドレス': 'email', '電話': 'phone', '電話番号': 'phone',
     '一般予定人数': 'note', '予定人数': 'note', '枚数': 'tickets', '金額': 'fee', 'アップライン': 'upline', 'アップダイヤ': 'upline',
     '日付': 'date', '開催日': 'date', 'MMDD': 'dateMd', '日時': 'time', '時間': 'time',
-    '会場': 'venue', '開催場所': 'venue', 'ゲスト': 'guest', 'ゲスト名': 'guest', 'イベント名': 'eventName'
+    '会場詳細': 'venueDetail', '会場': 'venue', '開催場所': 'venue', 'ゲスト': 'guest', 'ゲスト名': 'guest', 'イベント名': 'eventName'
   };
   Object.keys(jpMap).forEach(function(jp) {
     const v = data[jpMap[jp]];
@@ -654,6 +680,7 @@ function buildMailData(row, eventDate, info) {
     dateMd:    Utilities.formatDate(eventDate, 'Asia/Tokyo', 'MM月dd日'),
     time:      info ? info.time      : '',
     venue:     info ? info.venue     : '',
+    venueDetail: info ? info.venueDetail : '',
     guest:     info ? info.guest     : '',
     eventName: info ? info.eventName : ''
   };
