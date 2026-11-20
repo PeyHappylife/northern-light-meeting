@@ -554,6 +554,7 @@ function sendConfirmationEmail(p, eventInfo) {
     dateMd:    eventInfo ? eventInfo.dateMd : '',
     time:      eventInfo ? eventInfo.time  : '',
     venue:     eventInfo ? eventInfo.venue : '',
+    venueDetail: eventInfo ? eventInfo.venueDetail : '',   // 会場名・住所・地図（削除禁止）
     guest:     eventInfo ? eventInfo.guest : '',
     eventName: eventInfo ? eventInfo.eventName : ''
   };
